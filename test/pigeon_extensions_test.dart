@@ -46,9 +46,36 @@ void main() {
     });
 
     test('loadConfig provides default configuration when no files exist', () {
-      final config = PigeonExtension.loadConfig({});
+      final platformOutputs = {
+        'cpp': true,
+        'gobject': true,
+        'kotlin': true,
+        'java': false,
+        'swift': true,
+        'objc': false,
+      };
+
+      final config = PigeonExtension.loadConfig(
+        platformOutputs,
+        ast: true,
+        dartTest: true,
+        debugGenerators: true,
+      );
+
       expect(config.dart?.out, 'lib');
-      expect(config.ast, isNull);
+      expect(config.dart?.out, isNotNull);
+      expect(config.dart?.testOut, isNotNull);
+      expect(config.cpp?.headerOut, isNotNull);
+      expect(config.cpp?.sourceOut, isNotNull);
+      expect(config.gobject?.headerOut, isNotNull);
+      expect(config.gobject?.sourceOut, isNotNull);
+      expect(config.kotlin?.out, isNotNull);
+      expect(config.java?.out, isNull);
+      expect(config.swift?.out, isNotNull);
+      expect(config.objc?.headerOut, isNull);
+      expect(config.objc?.sourceOut, isNull);
+      expect(config.ast?.out, isNotNull);
+      expect(config.debugGenerators, isTrue);
     });
   });
 
