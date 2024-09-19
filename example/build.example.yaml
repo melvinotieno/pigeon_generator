@@ -1,0 +1,14 @@
+targets:
+  $default:
+    builders:
+      pigeon_generator:
+        options:
+          platforms:
+            - android:kotlin
+            - ios
+          ast: true
+          dart_test: true
+          debug_generators: true
+
+additional_public_assets:
+  - pigeons/**

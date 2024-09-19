@@ -1,0 +1,10 @@
+android
+ios
+lib
+linux
+macos
+output
+test
+windows
+build.y*
+pigeon.y*
