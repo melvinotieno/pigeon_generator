@@ -153,7 +153,7 @@ class PigeonKotlinConfig {
   }
 
   factory PigeonKotlinConfig.defaults() {
-    return PigeonKotlinConfig(out: 'src/main/kotlin');
+    return PigeonKotlinConfig(out: 'android/app/src/main/kotlin');
   }
 }
 
@@ -173,7 +173,7 @@ class PigeonJavaConfig {
   }
 
   factory PigeonJavaConfig.defaults() {
-    return PigeonJavaConfig(out: 'src/main/java');
+    return PigeonJavaConfig(out: 'android/app/src/main/java');
   }
 }
 
