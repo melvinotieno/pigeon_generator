@@ -1,15 +1,28 @@
 name: pigeon_generator
-description: A starting point for Dart libraries or applications.
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+description: Integrate build_runner with pigeon code generation.
+homepage: https://github.com/melvinotieno/pigeon_generator
+repository: https://github.com/melvinotieno/pigeon_generator
+issue_tracker: https://github.com/melvinotieno/pigeon_generator/issues
+documentation: https://github.com/melvinotieno/pigeon_generator/blob/main/README.md
+
+topics:
+  - build-runner
+  - pigeon
+  - pigeon-generator
+  - pigeon-build-runner
 
 environment:
   sdk: ^3.5.3
 
-# Add regular dependencies here.
 dependencies:
-  # path: ^1.8.0
+  build: ^2.4.1
+  checked_yaml: ^2.0.3
+  path: ^1.9.0
+  pigeon: ^22.4.0
+  scratch_space: ^1.0.2
 
 dev_dependencies:
+  build_runner: ^2.4.12
   lints: ^4.0.0
   test: ^1.24.0
