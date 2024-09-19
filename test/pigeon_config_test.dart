@@ -80,6 +80,22 @@ void main() {
       expect(config.testOut, 'test/output_test.dart');
       expect(config.packageName, 'my_package');
     });
+
+    test('should create PigeonDartConfig with defaults', () {
+      final config = PigeonDartConfig.defaults(true);
+
+      expect(config.out, 'lib');
+      expect(config.testOut, 'test');
+      expect(config.packageName, isNull);
+    });
+
+    test('should create PigeonDartConfig with defaults without test', () {
+      final config = PigeonDartConfig.defaults(false);
+
+      expect(config.out, 'lib');
+      expect(config.testOut, isNull);
+      expect(config.packageName, isNull);
+    });
   });
 
   group('PigeonCppConfig', () {
@@ -95,6 +111,14 @@ void main() {
       expect(config.headerOut, 'include/header.h');
       expect(config.sourceOut, 'src/source.cpp');
       expect(config.namespace, 'my_namespace');
+    });
+
+    test('should create PigeonCppConfig with defaults', () {
+      final config = PigeonCppConfig.defaults();
+
+      expect(config.headerOut, 'windows/runner');
+      expect(config.sourceOut, 'windows/runner');
+      expect(config.namespace, isNull);
     });
   });
 
@@ -112,6 +136,14 @@ void main() {
       expect(config.sourceOut, 'src/gobject_source.cpp');
       expect(config.module, 'my_module');
     });
+
+    test('should create PigeonGobjectConfig with defaults', () {
+      final config = PigeonGobjectConfig.defaults();
+
+      expect(config.headerOut, 'linux');
+      expect(config.sourceOut, 'linux');
+      expect(config.module, isNull);
+    });
   });
 
   group('PigeonKotlinConfig', () {
@@ -125,6 +157,13 @@ void main() {
 
       expect(config.out, 'src/main/kotlin');
       expect(config.package, 'com.example');
+    });
+
+    test('should create PigeonKotlinConfig with defaults', () {
+      final config = PigeonKotlinConfig.defaults();
+
+      expect(config.out, 'src/main/kotlin');
+      expect(config.package, isNull);
     });
   });
 
@@ -142,6 +181,14 @@ void main() {
       expect(config.package, 'com.example');
       expect(config.useGeneratedAnnotation, true);
     });
+
+    test('should create PigeonJavaConfig with defaults', () {
+      final config = PigeonJavaConfig.defaults();
+
+      expect(config.out, 'src/main/java');
+      expect(config.package, isNull);
+      expect(config.useGeneratedAnnotation, isNull);
+    });
   });
 
   group('PigeonSwiftConfig', () {
@@ -153,6 +200,12 @@ void main() {
       final config = PigeonSwiftConfig.fromMap(map);
 
       expect(config.out, 'Sources/Swift');
+    });
+
+    test('should create PigeonSwiftConfig with defaults', () {
+      final config = PigeonSwiftConfig.defaults();
+
+      expect(config.out, 'ios/Runner');
     });
   });
 
@@ -170,6 +223,14 @@ void main() {
       expect(config.sourceOut, 'src/objc_source.m');
       expect(config.prefix, 'MY');
     });
+
+    test('should create PigeonObjcConfig with defaults', () {
+      final config = PigeonObjcConfig.defaults();
+
+      expect(config.headerOut, 'macos/Runner');
+      expect(config.sourceOut, 'macos/Runner');
+      expect(config.prefix, isNull);
+    });
   });
 
   group('PigeonAstConfig', () {
@@ -181,6 +242,12 @@ void main() {
       final config = PigeonAstConfig.fromMap(map);
 
       expect(config.out, 'ast/output.ast');
+    });
+
+    test('should create PigeonAstConfig with defaults', () {
+      final config = PigeonAstConfig.defaults();
+
+      expect(config.out, 'output');
     });
   });
 }

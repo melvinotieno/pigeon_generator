@@ -84,6 +84,13 @@ class PigeonDartConfig {
       packageName: map['package_name'] as String?,
     );
   }
+
+  factory PigeonDartConfig.defaults(bool? dartTest) {
+    return PigeonDartConfig(
+      out: 'lib',
+      testOut: dartTest == true ? 'test' : null,
+    );
+  }
 }
 
 class PigeonCppConfig {
@@ -98,6 +105,13 @@ class PigeonCppConfig {
       headerOut: map['header_out'] as String?,
       sourceOut: map['source_out'] as String?,
       namespace: map['namespace'] as String?,
+    );
+  }
+
+  factory PigeonCppConfig.defaults() {
+    return PigeonCppConfig(
+      headerOut: 'windows/runner',
+      sourceOut: 'windows/runner',
     );
   }
 }
@@ -116,6 +130,13 @@ class PigeonGobjectConfig {
       module: map['module'] as String?,
     );
   }
+
+  factory PigeonGobjectConfig.defaults() {
+    return PigeonGobjectConfig(
+      headerOut: 'linux',
+      sourceOut: 'linux',
+    );
+  }
 }
 
 class PigeonKotlinConfig {
@@ -129,6 +150,10 @@ class PigeonKotlinConfig {
       out: map['out'] as String?,
       package: map['package'] as String?,
     );
+  }
+
+  factory PigeonKotlinConfig.defaults() {
+    return PigeonKotlinConfig(out: 'src/main/kotlin');
   }
 }
 
@@ -146,6 +171,10 @@ class PigeonJavaConfig {
       useGeneratedAnnotation: map['use_generated_annotation'] as bool?,
     );
   }
+
+  factory PigeonJavaConfig.defaults() {
+    return PigeonJavaConfig(out: 'src/main/java');
+  }
 }
 
 class PigeonSwiftConfig {
@@ -155,6 +184,10 @@ class PigeonSwiftConfig {
 
   factory PigeonSwiftConfig.fromMap(Map map) {
     return PigeonSwiftConfig(out: map['out'] as String?);
+  }
+
+  factory PigeonSwiftConfig.defaults() {
+    return PigeonSwiftConfig(out: 'ios/Runner');
   }
 }
 
@@ -172,6 +205,13 @@ class PigeonObjcConfig {
       prefix: map['prefix'] as String?,
     );
   }
+
+  factory PigeonObjcConfig.defaults() {
+    return PigeonObjcConfig(
+      headerOut: 'macos/Runner',
+      sourceOut: 'macos/Runner',
+    );
+  }
 }
 
 class PigeonAstConfig {
@@ -181,5 +221,9 @@ class PigeonAstConfig {
 
   factory PigeonAstConfig.fromMap(Map map) {
     return PigeonAstConfig(out: map['out'] as String?);
+  }
+
+  factory PigeonAstConfig.defaults() {
+    return PigeonAstConfig(out: 'output');
   }
 }
