@@ -91,6 +91,7 @@ class PigeonBuilder extends Builder {
       input: input,
       dartOut: getPath('.g.dart', pigeonConfig.dart?.out),
       dartTestOut: getPath('_test.g.dart', pigeonConfig.dart?.testOut),
+      dartPackageName: pigeonConfig.dart?.packageName,
       cppHeaderOut: getPath('.g.h', pigeonConfig.cpp?.headerOut),
       cppSourceOut: getPath('.g.cpp', pigeonConfig.cpp?.sourceOut),
       cppOptions: CppOptions(namespace: pigeonConfig.cpp?.namespace),
@@ -108,8 +109,11 @@ class PigeonBuilder extends Builder {
       objcHeaderOut: getPath('.g.h', pigeonConfig.objc?.headerOut),
       objcSourceOut: getPath('.g.m', pigeonConfig.objc?.sourceOut),
       objcOptions: ObjcOptions(prefix: pigeonConfig.objc?.prefix),
-      astOut: getPath('.g.ast.json', pigeonConfig.ast?.out),
-      dartPackageName: pigeonConfig.dart?.packageName,
+      astOut: getPath('.g.ast', pigeonConfig.ast?.out),
+      debugGenerators: pigeonConfig.debugGenerators,
+      copyrightHeader: pigeonConfig.copyrightHeader,
+      oneLanguage: pigeonConfig.oneLanguage,
+      basePath: pigeonConfig.basePath,
     );
   }
 }
