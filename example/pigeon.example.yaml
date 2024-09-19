@@ -1,0 +1,32 @@
+inputs: pigeons
+dart:
+  out: 'lib'
+  test-out: 'test'
+  package-name: 'pigeon_generator_example'
+cpp:
+  header-out: 'windows/runner'
+  source-out: 'windows/runner'
+  namespace: 'pigeon_generator_example'
+gobject:
+  header-out: 'linux'
+  source-out: 'linux'
+  module: 'pigeon_generator_example'
+kotlin:
+  out: 'android/app/src/main/kotlin/com/example/pigeon_generator_example'
+  package: 'com.example.pigeon_generator_example'
+java:
+  out: 'android/app/src/main/java/com/example/pigeon_generator_example'
+  package: 'com.example.pigeon_generator_example'
+  use-generated-annotation: true
+swift:
+  out: 'ios/Runner'
+objc:
+  header-out: 'macos/Runner'
+  source-out: 'macos/Runner'
+  prefix: 'PGN'
+ast:
+  out: 'output'
+copyright-header: 'pigeons/copyright.txt'
+one-language: false
+debug-generators: false
+base-path: 'pigeon_generator_example'
