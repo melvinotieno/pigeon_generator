@@ -1,0 +1,7 @@
+builders:
+  pigeon_generator:
+    import: "package:pigeon_generator/pigeon_generator.dart"
+    builder_factories: ["pigeonBuilder"]
+    build_extensions: {".dart": [".g.dart", ".g.h", ".g.cpp", ".g.cc", ".g.kt", ".g.java", ".g.swift", ".g.m", ".g.ast"]}
+    auto_apply: dependents
+    build_to: source
