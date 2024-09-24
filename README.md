@@ -13,13 +13,14 @@ This is a dart package that integrates [build_runner](https://pub.dev/packages/b
 To install this package, run the following command:
 
 ```bash
-flutter pub add pigeon pigeon_generator --dev
+flutter pub add build_runner pigeon pigeon_generator --dev
 ```
 
 Alternatively, add the following dependencies to your `pubspec.yaml` file, replacing `[version]` with the latest version of the package:
 
 ```yaml
 dev_dependencies:
+  build_runner: [version]
   pigeon: [version]
   pigeon_generator: [version]
 ```
