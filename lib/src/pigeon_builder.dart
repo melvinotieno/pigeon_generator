@@ -87,35 +87,60 @@ class PigeonBuilder extends Builder {
 
   /// Returns the [PigeonOptions] for the given input file.
   PigeonOptions _getPigeonOptions(String input) {
-    final fileName = path.basenameWithoutExtension(input);
+    String? getPath(
+      String? output,
+      String extension, {
+      String? append,
+      bool? capitalize,
+    }) {
+      if (output == null) return null;
 
-    String? getPath(String? output, String extension) {
-      return output != null ? '$output/$fileName$extension' : null;
+      final inputName = path.basenameWithoutExtension(input);
+
+      var outputName = inputName;
+
+      if (append != null) outputName += append;
+
+      if (capitalize == true) {
+        // If outputName is snake case, capitalize the first letter of each word
+        // and remove the underscores.
+        final regex = RegExp(r'(_[a-z])|(^[a-z])');
+        outputName = outputName.replaceAllMapped(regex, (Match match) {
+          return match[0]!.replaceAll('_', '').toUpperCase();
+        });
+      }
+
+      // Replace outTemplate name with outputName and extension with extension.
+      var outputFileName = pigeonConfig.outTemplate;
+      outputFileName = outputFileName.replaceAll('name', outputName);
+      outputFileName = outputFileName.replaceAll('extension', extension);
+
+      return path.join(output, outputFileName);
     }
 
     return PigeonOptions(
       input: input,
-      dartOut: getPath(pigeonConfig.dart?.out, '.g.dart'),
-      dartTestOut: getPath(pigeonConfig.dart?.testOut, '_test.g.dart'),
+      dartOut: getPath(pigeonConfig.dart?.out, 'dart'),
+      dartTestOut: getPath(pigeonConfig.dart?.testOut, 'dart', append: '_test'),
       dartPackageName: pigeonConfig.dart?.packageName,
-      cppHeaderOut: getPath(pigeonConfig.cpp?.headerOut, '.g.h'),
-      cppSourceOut: getPath(pigeonConfig.cpp?.sourceOut, '.g.cpp'),
+      cppHeaderOut: getPath(pigeonConfig.cpp?.headerOut, 'h'),
+      cppSourceOut: getPath(pigeonConfig.cpp?.sourceOut, 'cpp'),
       cppOptions: CppOptions(namespace: pigeonConfig.cpp?.namespace),
-      gobjectHeaderOut: getPath(pigeonConfig.gobject?.headerOut, '.g.h'),
-      gobjectSourceOut: getPath(pigeonConfig.gobject?.sourceOut, '.g.cc'),
+      gobjectHeaderOut: getPath(pigeonConfig.gobject?.headerOut, 'h'),
+      gobjectSourceOut: getPath(pigeonConfig.gobject?.sourceOut, 'cc'),
       gobjectOptions: GObjectOptions(module: pigeonConfig.gobject?.module),
-      kotlinOut: getPath(pigeonConfig.kotlin?.out, '.g.kt'),
+      kotlinOut: getPath(pigeonConfig.kotlin?.out, 'kt', capitalize: true),
       kotlinOptions: KotlinOptions(package: pigeonConfig.kotlin?.package),
-      javaOut: getPath(pigeonConfig.java?.out, '.g.java'),
+      javaOut: getPath(pigeonConfig.java?.out, 'java', capitalize: true),
       javaOptions: JavaOptions(
         package: pigeonConfig.java?.package,
         useGeneratedAnnotation: pigeonConfig.java?.useGeneratedAnnotation,
       ),
-      swiftOut: getPath(pigeonConfig.swift?.out, '.g.swift'),
-      objcHeaderOut: getPath(pigeonConfig.objc?.headerOut, '.g.h'),
-      objcSourceOut: getPath(pigeonConfig.objc?.sourceOut, '.g.m'),
+      swiftOut: getPath(pigeonConfig.swift?.out, 'swift', capitalize: true),
+      objcHeaderOut: getPath(pigeonConfig.objc?.headerOut, 'h'),
+      objcSourceOut: getPath(pigeonConfig.objc?.sourceOut, 'm'),
       objcOptions: ObjcOptions(prefix: pigeonConfig.objc?.prefix),
-      astOut: getPath(pigeonConfig.ast?.out, '.g.ast'),
+      astOut: getPath(pigeonConfig.ast?.out, 'ast'),
       debugGenerators: pigeonConfig.debugGenerators,
       copyrightHeader: pigeonConfig.copyrightHeader,
       oneLanguage: pigeonConfig.oneLanguage,
