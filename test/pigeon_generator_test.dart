@@ -10,11 +10,12 @@ void main() {
       expect(builder, isA<PigeonBuilder>());
     });
 
-    test('returns PigeonBuilder with correct platform outputs', () {
+    test('returns PigeonBuilder with correct PigeonConfig', () {
       final options = BuilderOptions({
-        'platforms': ['windows', 'linux', 'android:kotlin', 'ios'],
+        'dart': {'test_out': true},
+        'kotlin': true,
+        'swift': true,
         'ast': true,
-        'dart_test': true,
         'debug_generators': true,
       });
 
@@ -23,11 +24,11 @@ void main() {
 
       expect(config.dart?.out, isNotNull);
       expect(config.dart?.testOut, isNotNull);
-      expect(config.cpp?.headerOut, isNotNull);
-      expect(config.cpp?.sourceOut, isNotNull);
-      expect(config.gobject?.headerOut, isNotNull);
-      expect(config.gobject?.sourceOut, isNotNull);
-      expect(config.kotlin?.out, isNotNull);
+      expect(config.cpp?.headerOut, isNull);
+      expect(config.cpp?.sourceOut, isNull);
+      expect(config.gobject?.headerOut, isNull);
+      expect(config.gobject?.sourceOut, isNull);
+      expect(config.kotlin?.out, isNull); // There's no build.gradle file
       expect(config.java?.out, isNull);
       expect(config.swift?.out, isNotNull);
       expect(config.objc?.headerOut, isNull);

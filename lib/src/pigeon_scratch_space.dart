@@ -5,6 +5,7 @@ import 'package:path/path.dart' as path;
 import 'package:pigeon/pigeon.dart';
 import 'package:scratch_space/scratch_space.dart';
 
+/// A specialized [ScratchSpace] for handling Pigeon generated files.
 class PigeonScratchSpace extends ScratchSpace {
   @override
   File fileFor(AssetId id) {
@@ -13,7 +14,11 @@ class PigeonScratchSpace extends ScratchSpace {
     return File(path.join(tempDir.path, path.normalize(packagePath)));
   }
 
-  /// Returns the [PigeonOptions] with the paths updated to the scratch space.
+  /// Returns [PigeonOptions] with the out paths updated to the scratch space.
+  ///
+  /// - [pigeonOptions]: The original [PigeonOptions] object.
+  /// - [allowedOutputs]: An iterable of [AssetId] objects representing the
+  ///   allowed output files.
   PigeonOptions getPigeonOptions(
     PigeonOptions pigeonOptions,
     Iterable<AssetId> allowedOutputs,
