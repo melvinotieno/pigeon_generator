@@ -8,15 +8,20 @@ import 'pigeon_config.dart';
 import 'pigeon_extensions.dart';
 import 'pigeon_scratch_space.dart';
 
+/// A [Builder] that uses Pigeon to generate code from Dart files.
 class PigeonBuilder extends Builder {
+  /// Creates a new [PigeonBuilder] with the given [PigeonConfig].
   PigeonBuilder(this.pigeonConfig);
 
+  /// The Pigeon configuration to use.
   final PigeonConfig pigeonConfig;
 
+  /// The path context to use for file operations.
   final path.Context _pathContext = path.Context(
     style: Platform.isWindows ? path.Style.posix : path.Style.platform,
   );
 
+  /// The resource for managing the Pigeon scratch space.
   final Resource<PigeonScratchSpace> _scratchSpaceResource = Resource(
     () => PigeonScratchSpace(),
     dispose: (scratchSpace) => scratchSpace.delete(),
@@ -80,36 +85,37 @@ class PigeonBuilder extends Builder {
     }
   }
 
+  /// Returns the [PigeonOptions] for the given input file.
   PigeonOptions _getPigeonOptions(String input) {
     final fileName = path.basenameWithoutExtension(input);
 
-    String? getPath(String extension, String? output) {
+    String? getPath(String? output, String extension) {
       return output != null ? '$output/$fileName$extension' : null;
     }
 
     return PigeonOptions(
       input: input,
-      dartOut: getPath('.g.dart', pigeonConfig.dart?.out),
-      dartTestOut: getPath('_test.g.dart', pigeonConfig.dart?.testOut),
+      dartOut: getPath(pigeonConfig.dart?.out, '.g.dart'),
+      dartTestOut: getPath(pigeonConfig.dart?.testOut, '_test.g.dart'),
       dartPackageName: pigeonConfig.dart?.packageName,
-      cppHeaderOut: getPath('.g.h', pigeonConfig.cpp?.headerOut),
-      cppSourceOut: getPath('.g.cpp', pigeonConfig.cpp?.sourceOut),
+      cppHeaderOut: getPath(pigeonConfig.cpp?.headerOut, '.g.h'),
+      cppSourceOut: getPath(pigeonConfig.cpp?.sourceOut, '.g.cpp'),
       cppOptions: CppOptions(namespace: pigeonConfig.cpp?.namespace),
-      gobjectHeaderOut: getPath('.g.h', pigeonConfig.gobject?.headerOut),
-      gobjectSourceOut: getPath('.g.cc', pigeonConfig.gobject?.sourceOut),
+      gobjectHeaderOut: getPath(pigeonConfig.gobject?.headerOut, '.g.h'),
+      gobjectSourceOut: getPath(pigeonConfig.gobject?.sourceOut, '.g.cc'),
       gobjectOptions: GObjectOptions(module: pigeonConfig.gobject?.module),
-      kotlinOut: getPath('.g.kt', pigeonConfig.kotlin?.out),
+      kotlinOut: getPath(pigeonConfig.kotlin?.out, '.g.kt'),
       kotlinOptions: KotlinOptions(package: pigeonConfig.kotlin?.package),
-      javaOut: getPath('.g.java', pigeonConfig.java?.out),
+      javaOut: getPath(pigeonConfig.java?.out, '.g.java'),
       javaOptions: JavaOptions(
         package: pigeonConfig.java?.package,
         useGeneratedAnnotation: pigeonConfig.java?.useGeneratedAnnotation,
       ),
-      swiftOut: getPath('.g.swift', pigeonConfig.swift?.out),
-      objcHeaderOut: getPath('.g.h', pigeonConfig.objc?.headerOut),
-      objcSourceOut: getPath('.g.m', pigeonConfig.objc?.sourceOut),
+      swiftOut: getPath(pigeonConfig.swift?.out, '.g.swift'),
+      objcHeaderOut: getPath(pigeonConfig.objc?.headerOut, '.g.h'),
+      objcSourceOut: getPath(pigeonConfig.objc?.sourceOut, '.g.m'),
       objcOptions: ObjcOptions(prefix: pigeonConfig.objc?.prefix),
-      astOut: getPath('.g.ast', pigeonConfig.ast?.out),
+      astOut: getPath(pigeonConfig.ast?.out, '.g.ast'),
       debugGenerators: pigeonConfig.debugGenerators,
       copyrightHeader: pigeonConfig.copyrightHeader,
       oneLanguage: pigeonConfig.oneLanguage,
