@@ -6,5 +6,4 @@ macos
 output
 test
 windows
-build.y*
-pigeon.y*
+build.yaml
