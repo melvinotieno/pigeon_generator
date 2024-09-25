@@ -368,7 +368,7 @@ class PigeonSwiftConfig {
 
   /// The default configuration for Swift code generation.
   static PigeonSwiftConfig get _default {
-    return PigeonSwiftConfig(out: 'ios/Runner/pigeons');
+    return PigeonSwiftConfig(out: 'ios/Runner/Pigeons');
   }
 }
 
@@ -413,8 +413,8 @@ class PigeonObjcConfig {
   /// The default configuration for Objective-C code generation.
   static PigeonObjcConfig get _default {
     return PigeonObjcConfig(
-      headerOut: 'macos/Runner/pigeons',
-      sourceOut: 'macos/Runner/pigeons',
+      headerOut: 'macos/Runner/Pigeons',
+      sourceOut: 'macos/Runner/Pigeons',
     );
   }
 }
