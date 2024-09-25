@@ -1,3 +1,7 @@
+## 2.0.1
+
+- For iOS and macOS, the default pigeons folder is capitalized, i.e. `ios/Runner/Pigeons` for iOS and `macos/Runner/Pigeons` for macOS
+
 ## 2.0.0
 
 - Added validation checks for all outputs requiring them to be folders.
