@@ -93,6 +93,8 @@ copyright_header: "pigeons/copyright.txt"
 one_language: false
 debug_generators: false
 base_path: "pigeon_generator_example"
+skip_outputs:
+  defaults: [ios] # Do not generate output for ios for pigeons/defaults.dart
 out_template: "name.g.extension"
 ```
 
@@ -128,6 +130,7 @@ out_template: "name.g.extension"
 - `one_language`: The value `true` allow Pigeon to only generate code for one language. Default is `false`.
 - `debug_generators`: The value `true` prints the line number of the generator in comments at new lines. Default is `false`.
 - `base_path`: A base path to be prefixed to all outputs and copyright header path. Generally used for testing.
+- `skip_outputs`: The platforms to skip generating outputs for. Options include: android, ios, macos, linux, windows.
 - `out_template`: The template for the generated file name. The default is `name.g.extension` where `name` is the name of the pigeon file and `extension` is the platform specific extension. Example for the pigeon file named `test.dart`, the generated file for kotlin will be `Test.g.kt`.
 
 ### 3. Run the generator
