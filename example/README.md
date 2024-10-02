@@ -38,8 +38,12 @@ targets:
           one_language: false
           debug_generators: false
           base_path: "pigeon_generator_example"
+          skip_outputs:
+            defaults: [ios] # Do not generate output for ios for pigeons/defaults.dart
           out_template: "name.g.extension" # Default
 
 additional_public_assets:
   - pigeons/**
 ```
+
+To test for android, copy the file `build.example.gradle` to `android/app/build.gradle`.

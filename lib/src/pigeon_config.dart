@@ -19,6 +19,7 @@ class PigeonConfig {
     this.ast,
     this.debugGenerators,
     this.basePath,
+    this.skipOutputs,
     String? outTemplate,
   }) : _outTemplate = outTemplate ?? 'name.g.extension';
 
@@ -61,6 +62,9 @@ class PigeonConfig {
   /// The base path for the generated code.
   final String? basePath;
 
+  /// Declares which outputs to skip.
+  final dynamic skipOutputs;
+
   /// The template for naming the generated files.
   String? _outTemplate;
 
@@ -96,6 +100,7 @@ class PigeonConfig {
       ast: PigeonAstConfig.fromConfig(config['ast']),
       debugGenerators: config['debug_generators'] as bool?,
       basePath: config['base_path'] as String?,
+      skipOutputs: config['skip_outputs'],
       outTemplate: config['out_template'] as String?,
     );
   }

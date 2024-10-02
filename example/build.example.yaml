@@ -35,6 +35,8 @@ targets:
           one_language: false
           debug_generators: false
           base_path: 'pigeon_generator_example'
+          skip_outputs:
+            defaults: [ios] # Options include: android, ios, macos, linux, windows
           out_template: 'name.g.extension' # Default
 
 additional_public_assets:
