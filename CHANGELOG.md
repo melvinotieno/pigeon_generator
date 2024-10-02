@@ -1,3 +1,8 @@
+## 2.0.2
+
+- Added skip_outputs option to build.yaml to skip generating outputs for specific platforms.
+- Generate errorClassName for Kotlin. [See this comment](https://github.com/flutter/flutter/issues/142099#issuecomment-1908091384).
+
 ## 2.0.1
 
 - For iOS and macOS, the default pigeons folder is capitalized, i.e. `ios/Runner/Pigeons` for iOS and `macos/Runner/Pigeons` for macOS
