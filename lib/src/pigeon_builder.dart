@@ -87,28 +87,30 @@ class PigeonBuilder extends Builder {
 
   /// Returns the [PigeonOptions] for the given input file.
   PigeonOptions _getPigeonOptions(String input) {
+    final inputName = path.basenameWithoutExtension(input);
+
+    /// Converts a string to PascalCase.
+    String pascalCase(String name) {
+      final regex = RegExp(r'(_[a-z])|(^[a-z])');
+      return name.replaceAllMapped(regex, (Match match) {
+        return match[0]!.replaceAll('_', '').toUpperCase();
+      });
+    }
+
+    /// Returns the path for the given output file.
     String? getPath(
       String? output,
       String extension, {
       String? append,
-      bool? capitalize,
+      bool? pascal,
     }) {
       if (output == null) return null;
-
-      final inputName = path.basenameWithoutExtension(input);
 
       var outputName = inputName;
 
       if (append != null) outputName += append;
 
-      if (capitalize == true) {
-        // If outputName is snake case, capitalize the first letter of each word
-        // and remove the underscores.
-        final regex = RegExp(r'(_[a-z])|(^[a-z])');
-        outputName = outputName.replaceAllMapped(regex, (Match match) {
-          return match[0]!.replaceAll('_', '').toUpperCase();
-        });
-      }
+      if (pascal == true) outputName = pascalCase(outputName);
 
       // Replace outTemplate name with outputName and extension with extension.
       var outputFileName = pigeonConfig.outTemplate;
@@ -118,27 +120,70 @@ class PigeonBuilder extends Builder {
       return path.join(output, outputFileName);
     }
 
+    String? cppHeaderOut = pigeonConfig.cpp?.headerOut;
+    String? cppSourceOut = pigeonConfig.cpp?.sourceOut;
+    String? gobjectHeaderOut = pigeonConfig.gobject?.headerOut;
+    String? gobjectSourceOut = pigeonConfig.gobject?.sourceOut;
+    String? kotlinOut = pigeonConfig.kotlin?.out;
+    String? javaOut = pigeonConfig.java?.out;
+    String? swiftOut = pigeonConfig.swift?.out;
+    String? objcHeaderOut = pigeonConfig.objc?.headerOut;
+    String? objcSourceOut = pigeonConfig.objc?.sourceOut;
+
+    if (pigeonConfig.skipOutputs != null) {
+      final skipOutputs = pigeonConfig.skipOutputs?[inputName];
+
+      if (skipOutputs != null) {
+        for (final skipOutput in skipOutputs) {
+          switch (skipOutput) {
+            case 'android':
+              kotlinOut = null;
+              javaOut = null;
+              break;
+            case 'ios':
+              swiftOut = null;
+              break;
+            case 'macos':
+              objcHeaderOut = null;
+              objcSourceOut = null;
+              break;
+            case 'windows':
+              cppHeaderOut = null;
+              cppSourceOut = null;
+              break;
+            case 'linux':
+              gobjectHeaderOut = null;
+              gobjectSourceOut = null;
+              break;
+          }
+        }
+      }
+    }
+
     return PigeonOptions(
       input: input,
       dartOut: getPath(pigeonConfig.dart?.out, 'dart'),
       dartTestOut: getPath(pigeonConfig.dart?.testOut, 'dart', append: '_test'),
       dartPackageName: pigeonConfig.dart?.packageName,
-      cppHeaderOut: getPath(pigeonConfig.cpp?.headerOut, 'h'),
-      cppSourceOut: getPath(pigeonConfig.cpp?.sourceOut, 'cpp'),
+      cppHeaderOut: getPath(cppHeaderOut, 'h'),
+      cppSourceOut: getPath(cppSourceOut, 'cpp'),
       cppOptions: CppOptions(namespace: pigeonConfig.cpp?.namespace),
-      gobjectHeaderOut: getPath(pigeonConfig.gobject?.headerOut, 'h'),
-      gobjectSourceOut: getPath(pigeonConfig.gobject?.sourceOut, 'cc'),
+      gobjectHeaderOut: getPath(gobjectHeaderOut, 'h'),
+      gobjectSourceOut: getPath(gobjectSourceOut, 'cc'),
       gobjectOptions: GObjectOptions(module: pigeonConfig.gobject?.module),
-      kotlinOut: getPath(pigeonConfig.kotlin?.out, 'kt', capitalize: true),
-      kotlinOptions: KotlinOptions(package: pigeonConfig.kotlin?.package),
-      javaOut: getPath(pigeonConfig.java?.out, 'java', capitalize: true),
+      kotlinOut: getPath(kotlinOut, 'kt', pascal: true),
+      kotlinOptions: KotlinOptions(
+        package: pigeonConfig.kotlin?.package,
+        errorClassName: "${pascalCase(inputName)}FlutterError",
+      ),
+      javaOut: getPath(javaOut, 'java', pascal: true),
       javaOptions: JavaOptions(
         package: pigeonConfig.java?.package,
         useGeneratedAnnotation: pigeonConfig.java?.useGeneratedAnnotation,
       ),
-      swiftOut: getPath(pigeonConfig.swift?.out, 'swift', capitalize: true),
-      objcHeaderOut: getPath(pigeonConfig.objc?.headerOut, 'h'),
-      objcSourceOut: getPath(pigeonConfig.objc?.sourceOut, 'm'),
+      swiftOut: getPath(swiftOut, 'swift', pascal: true),
+      objcHeaderOut: getPath(objcHeaderOut, 'h'),
+      objcSourceOut: getPath(objcSourceOut, 'm'),
       objcOptions: ObjcOptions(prefix: pigeonConfig.objc?.prefix),
       astOut: getPath(pigeonConfig.ast?.out, 'ast'),
       debugGenerators: pigeonConfig.debugGenerators,
