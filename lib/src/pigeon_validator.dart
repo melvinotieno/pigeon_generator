@@ -8,110 +8,92 @@ import 'pigeon_config.dart';
 class PigeonValidator {
   PigeonValidator._();
 
-  /// The message to display when an invalid folder is provided.
-  static const invalidFolder = 'Invalid folder provided.';
-
   /// Validate the pigeon configuration.
   static validate(PigeonConfig config) {
     validateInputs(config.inputs);
-
-    if (config.dart != null) validateDartConfig(config.dart!);
-    if (config.cpp != null) validateCppConfig(config.cpp!);
-    if (config.gobject != null) validateGobjectConfig(config.gobject!);
-    if (config.kotlin != null) validateKotlinConfig(config.kotlin!);
-    if (config.java != null) validateJavaConfig(config.java!);
-    if (config.swift != null) validateSwiftConfig(config.swift!);
-    if (config.objc != null) validateObjcConfig(config.objc!);
-    if (config.ast != null) validateAstConfig(config.ast!);
-
+    validateDartConfig(config.dart);
+    validateCppConfig(config.cpp);
+    validateGobjectConfig(config.gobject);
+    validateKotlinConfig(config.kotlin);
+    validateJavaConfig(config.java);
+    validateSwiftConfig(config.swift);
+    validateObjcConfig(config.objc);
+    validateAstConfig(config.ast);
     validateCopyrightHeader(config.copyrightHeader);
-    validateBasePath(config.basePath);
   }
 
   /// Validate the inputs configuration.
   static validateInputs(String inputs) {
-    if (!_isValidFolder(inputs)) {
-      throw ValidatorException('inputs', invalidFolder);
+    if (!isValidFolder(inputs)) {
+      throw ValidatorException('inputs', 'Invalid folder provided.');
     }
   }
 
   /// Validate the dart configuration.
-  static validateDartConfig(PigeonDartConfig config) {
-    if (config.out != null && !_isValidFolder(config.out!)) {
-      throw ValidatorException('dart.out', invalidFolder);
-    }
+  static validateDartConfig(PigeonDartConfig? config) {
+    if (config == null) return;
 
-    if (config.testOut != null && !_isValidFolder(config.testOut!)) {
-      throw ValidatorException('dart.testOut', invalidFolder);
-    }
+    validateOutput('dart.out', config.out);
+    validateOutput('dart.testOut', config.testOut);
   }
 
   /// Validate the cpp configuration.
-  static validateCppConfig(PigeonCppConfig config) {
-    if (config.headerOut != null && !_isValidFolder(config.headerOut!)) {
-      throw ValidatorException('cpp.headerOut', invalidFolder);
-    }
+  static validateCppConfig(PigeonCppConfig? config) {
+    if (config == null) return;
 
-    if (config.sourceOut != null && !_isValidFolder(config.sourceOut!)) {
-      throw ValidatorException('cpp.sourceOut', invalidFolder);
-    }
+    validateOutput('cpp.headerOut', config.headerOut);
+    validateOutput('cpp.sourceOut', config.sourceOut);
   }
 
   /// Validate the gobject configuration.
-  static validateGobjectConfig(PigeonGobjectConfig config) {
-    if (config.headerOut != null && !_isValidFolder(config.headerOut!)) {
-      throw ValidatorException('gobject.headerOut', invalidFolder);
-    }
+  static validateGobjectConfig(PigeonGobjectConfig? config) {
+    if (config == null) return;
 
-    if (config.sourceOut != null && !_isValidFolder(config.sourceOut!)) {
-      throw ValidatorException('gobject.sourceOut', invalidFolder);
-    }
+    validateOutput('gobject.headerOut', config.headerOut);
+    validateOutput('gobject.sourceOut', config.sourceOut);
   }
 
   /// Validate the kotlin configuration.
-  static validateKotlinConfig(PigeonKotlinConfig config) {
-    if (config.out != null && !_isValidFolder(config.out!)) {
-      throw ValidatorException('kotlin.out', invalidFolder);
-    }
+  static validateKotlinConfig(PigeonKotlinConfig? config) {
+    if (config == null) return;
+
+    validateOutput('kotlin.out', config.out);
   }
 
   /// Validate the java configuration.
-  static validateJavaConfig(PigeonJavaConfig config) {
-    if (config.out != null && !_isValidFolder(config.out!)) {
-      throw ValidatorException('java.out', invalidFolder);
-    }
+  static validateJavaConfig(PigeonJavaConfig? config) {
+    if (config == null) return;
+
+    validateOutput('java.out', config.out);
   }
 
   /// Validate the swift configuration.
-  static validateSwiftConfig(PigeonSwiftConfig config) {
-    if (config.out != null && !_isValidFolder(config.out!)) {
-      throw ValidatorException('swift.out', invalidFolder);
-    }
+  static validateSwiftConfig(PigeonSwiftConfig? config) {
+    if (config == null) return;
+
+    validateOutput('swift.out', config.out);
   }
 
   /// Validate the objc configuration.
-  static validateObjcConfig(PigeonObjcConfig config) {
-    if (config.headerOut != null && !_isValidFolder(config.headerOut!)) {
-      throw ValidatorException('objc.headerOut', invalidFolder);
-    }
+  static validateObjcConfig(PigeonObjcConfig? config) {
+    if (config == null) return;
 
-    if (config.sourceOut != null && !_isValidFolder(config.sourceOut!)) {
-      throw ValidatorException('objc.sourceOut', invalidFolder);
-    }
+    validateOutput('objc.headerOut', config.headerOut);
+    validateOutput('objc.sourceOut', config.sourceOut);
   }
 
   /// Validate the ast configuration.
-  static validateAstConfig(PigeonAstConfig config) {
-    if (config.out != null && !_isValidFolder(config.out!)) {
-      throw ValidatorException('ast.out', invalidFolder);
-    }
+  static validateAstConfig(PigeonAstConfig? config) {
+    if (config == null) return;
+
+    validateOutput('ast.out', config.out);
   }
 
   /// Validate the copyright_header configuration.
   static validateCopyrightHeader(String? path) {
     if (path == null) return;
 
-    if (_isValidFolder(path)) {
+    if (isValidFolder(path)) {
       throw ValidatorException('copyright_header', 'Folder provided.');
     }
 
@@ -122,18 +104,24 @@ class PigeonValidator {
     }
   }
 
-  /// Validate base_path configuration.
-  static validateBasePath(String? path) {
-    if (path == null) return;
+  /// Validate the output configuration.
+  static validateOutput(String field, PigeonOutput? output) {
+    if (output == null) return;
 
-    if (!_isValidFolder(path)) {
-      throw ValidatorException('basePath', invalidFolder);
+    if (!isValidFolder(output.path)) {
+      throw ValidatorException(field, 'Invalid folder provided.');
     }
   }
 
   /// Check if the folder is valid.
-  static _isValidFolder(String folder) {
-    return folder.isNotEmpty && folder != '.' && path.extension(folder).isEmpty;
+  static bool isValidFolder(String folder) {
+    // Empty string provided.
+    if (folder.isEmpty) return false;
+
+    // If an extension exists, then this is a file and not a folder.
+    if (path.extension(folder).isNotEmpty) return false;
+
+    return true;
   }
 }
 
