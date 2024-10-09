@@ -2,11 +2,8 @@
 
 This is a dart package that integrates [build_runner](https://pub.dev/packages/build_runner) with [pigeon](https://pub.dev/packages/pigeon) code generator for platform channels. This automates the manual process of running `pigeon` hence making it easier and efficient to generate the code for platform channels.
 
-<div>
-  <a href="https://pub.dev/packages/pigeon_generator">
-    <img alt="pub.dev" src="https://img.shields.io/pub/v/pigeon_generator"/>
-  </a>
-</div>
+[![pub package](https://img.shields.io/pub/v/pigeon_generator.svg)](https://pub.dev/packages/pigeon_generator)
+[![pub points](https://img.shields.io/pub/points/pigeon_generator?color=2E8B57&label=pub%20points)](https://pub.dev/packages/pigeon_generator/score)
 
 ## Installation
 
@@ -69,24 +66,29 @@ dart:
 cpp:
   header_out: "windows/runner"
   source_out: "windows/runner"
-  namespace: "pigeon_generator_example"
+  options:
+    namespace: "pigeon_generator_example"
 gobject:
   header_out: "linux"
   source_out: "linux"
-  module: "pigeon_generator_example"
+  options:
+    module: "pigeon_generator_example"
 kotlin:
   out: "android/app/src/main/kotlin/com/example/pigeon_generator_example"
-  package: "com.example.pigeon_generator_example"
+  options:
+    package: "com.example.pigeon_generator_example"
 java:
   out: "android/app/src/main/java/com/example/pigeon_generator_example"
-  package: "com.example.pigeon_generator_example"
-  use_generated_annotation: true
+  options:
+    package: "com.example.pigeon_generator_example"
+    use_generated_annotation: true
 swift:
   out: "ios/Runner"
 objc:
   header_out: "macos/Runner"
   source_out: "macos/Runner"
-  prefix: "PGN"
+  options:
+    prefix: "PGN"
 ast:
   out: "output"
 copyright_header: "pigeons/copyright.txt"
@@ -106,24 +108,29 @@ out_template: "name.g.extension"
 - `cpp`: C++ code generation configuration for Windows. Defaults will be used if the value is `true` or if it is not specified and windows folder exists.
   - `header_out`: The folder path where the C++ header files will be generated `(.h)`. Default is `windows/runner/pigeons`.
   - `source_out`: The folder path where the C++ source files will be generated `(.cpp)`. Default is `windows/runner/pigeons`.
-  - `namespace`: The namespace of the generated C++ code.
+  - `options`:
+    - `namespace`: The namespace of the generated C++ code.
 - `gobject`: GObject code generation configuration for Linux. Defaults will be used if the value is `true` or if it is not specified and linux folder exists.
   - `header_out`: The folder path where the GObject header files will be generated `(.h)`. Default is `linux/pigeons`.
   - `source_out`: The folder path where the GObject source files will be generated `(.cc)`. Default is `linux/pigeons`.
-  - `module`: The module name of the generated GObject code.
+  - `options`:
+    - `module`: The module name of the generated GObject code.
 - `kotlin`: Kotlin code generation configuration for Android. Defaults will be used if the value is `true` or if it is not specified and android folder exists.
   - `out`: The folder path where the Kotlin code will be generated `(.kt)`. For the default, we get the applicationId from `android/app/build.gradle` and use it to generate the path.
-  - `package`: The package name of the generated Kotlin code.
+  - `options`:
+    - `package`: The package name of the generated Kotlin code.
 - `java`: Java code generation configuration for Android. Defaults will only be used if the value is `true`.
   - `out`: The folder path where the Java code will be generated `(.java)`.
-  - `package`: The package name of the generated Java code.
-  - `use_generated_annotation`: The value `true` adds the java.annotation.Generated annotation to the output.
+  - `options`:
+    - `package`: The package name of the generated Java code.
+    - `use_generated_annotation`: The value `true` adds the java.annotation.Generated annotation to the output.
 - `swift`: Swift code generation configuration for iOS. Defaults will be used if the value is `true` or if it is not specified and ios folder exists.
   - `out`: The folder path where the Swift code will be generated `(.swift)`. Default is `ios/Runner/pigeons`.
 - `objc`: Objective-C code generation configuration for macOS. Defaults will be used if the value is `true` or if it is not specified and macos folder exists.
   - `header_out`: The folder path where the Objective-C header files will be generated `(.h)`. Default is `macos/Runner/pigeons`.
   - `source_out`: The folder path where the Objective-C source files will be generated `(.m)`. Default is `macos/Runner/pigeons`.
-  - `prefix`: The prefix of the generated Objective-C code.
+  - `options`:
+    - `prefix`: The prefix of the generated Objective-C code.
 - `ast`: AST code generation configuration. Defaults will only be used if the value is `true`.
   - `out`: The folder path where the AST code will be generated `(.ast)`. Default is `output`.
 - `copyright_header`: The path to the file containing the copyright header. If the copyright header is placed inside the same folder as the pigeon files, then you do not need to specify this option as the generator will automatically pick it.

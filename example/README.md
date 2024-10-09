@@ -14,24 +14,28 @@ targets:
           cpp: # Or true/false
             header_out: "windows/runner"
             source_out: "windows/runner"
-            namespace: "pigeon_generator_example"
+            options:
+              namespace: "pigeon_generator_example"
           gobject: # Or true/false
             header_out: "linux"
             source_out: "linux"
-            module: "pigeon_generator_example"
+            options:
+              module: "pigeon_generator_example"
           kotlin: # Or true/false
             out: "android/app/src/main/kotlin/com/example/pigeon_generator_example"
             package: "com.example.pigeon_generator_example"
           java: # Or true/false
             out: "android/app/src/main/java/com/example/pigeon_generator_example"
-            package: "com.example.pigeon_generator_example"
-            use_generated_annotation: true
+            options:
+              package: "com.example.pigeon_generator_example"
+              use_generated_annotation: true
           swift: # Or true/false
             out: "ios/Runner"
           objc: # Or true/false
             header_out: "macos/Runner"
             source_out: "macos/Runner"
-            prefix: "PGN"
+            options:
+              prefix: "PGN"
           ast: # Or true/false
             out: "output"
           copyright_header: "pigeons/copyright.txt" # Not required if copyright.txt is in the same directory as the pigeons

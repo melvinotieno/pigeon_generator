@@ -1,3 +1,9 @@
+## 2.0.3
+
+- Added support for options, i.e. for dart, DartOptions, for kotlin, KotlinOptions etc. This means settings such as module for gobject, package for android and java etc will move to options. See [build.example.yaml](example/build.example.yaml) for more details.
+- Ability to override the options for specific input files by using ConfigurePigeon annotation provided by Pigeon.
+- Add a default prexif `Pigeon` for Objective-C code generation.
+
 ## 2.0.2
 
 - Added skip_outputs option to build.yaml to skip generating outputs for specific platforms.
