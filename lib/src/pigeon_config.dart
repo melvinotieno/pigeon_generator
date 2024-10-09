@@ -1,7 +1,9 @@
 import 'dart:io';
 
-import 'package:build/build.dart';
-import 'package:path/path.dart' as path;
+import 'package:path/path.dart' show join, normalize;
+import 'package:pigeon/pigeon.dart';
+
+import 'pigeon_utilities.dart';
 
 /// Configuration for Pigeon code generation.
 class PigeonConfig {
@@ -14,16 +16,16 @@ class PigeonConfig {
     this.java,
     this.swift,
     this.objc,
+    this.ast,
     this.copyrightHeader,
     this.oneLanguage,
-    this.ast,
     this.debugGenerators,
     this.basePath,
     this.skipOutputs,
     String? outTemplate,
-  }) : _outTemplate = outTemplate ?? 'name.g.extension';
+  }) : outTemplate = outTemplate ?? 'name.g.extension';
 
-  /// The input directory for the Pigeon files.
+  /// The input directory of the Pigeon files.
   final String inputs;
 
   /// Configuration for Dart code generation.
@@ -47,41 +49,36 @@ class PigeonConfig {
   /// Configuration for Objective-C code generation.
   final PigeonObjcConfig? objc;
 
-  /// The path to the copyright header file.
-  final String? copyrightHeader;
-
-  /// Whether to generate code for only one language.
-  final bool? oneLanguage;
-
   /// Configuration for AST (Abstract Syntax Tree) generation.
   final PigeonAstConfig? ast;
 
-  /// Whether to enable debug generators.
+  /// Path to a copyright header that will get prepended to generated code.
+  final String? copyrightHeader;
+
+  /// If Pigeon allows generating code for one language.
+  final bool? oneLanguage;
+
+  /// True means print out line number of generators in comments at newlines.
   final bool? debugGenerators;
 
-  /// The base path for the generated code.
+  /// A base path to be prepended to all provided output paths.
   final String? basePath;
 
   /// Declares which outputs to skip.
   final dynamic skipOutputs;
 
   /// The template for naming the generated files.
-  String? _outTemplate;
+  final String outTemplate;
 
-  /// Returns the output template.
-  String get outTemplate => _outTemplate ?? 'name.g.extension';
-
-  /// Creates a [PigeonConfig] instance from the given [BuilderOptions].
-  factory PigeonConfig.fromBuilderOptions(BuilderOptions options) {
-    final config = options.config;
-
-    final inputs = _normalizePath(config['inputs'] as String?) ?? 'pigeons';
+  /// Creates a [PigeonConfig] from the provided config.
+  factory PigeonConfig.fromConfig(Map<String, dynamic> config) {
+    final inputs = normalize((config['inputs'] as String? ?? 'pigeons').trim());
     final oneLanguage = config['one_language'] as bool?;
 
     var copyrightHeader = config['copyright_header'] as String?;
     if (copyrightHeader == null) {
       // If copyright.txt file exists in inputs, set as copyright header.
-      final copyrightPath = path.join(inputs, 'copyright.txt');
+      final copyrightPath = join(inputs, 'copyright.txt');
       final hasCopyright = File(copyrightPath).existsSync();
       if (hasCopyright) copyrightHeader = copyrightPath;
     }
@@ -95,12 +92,12 @@ class PigeonConfig {
       java: PigeonJavaConfig.fromConfig(config['java']),
       swift: PigeonSwiftConfig.fromConfig(config['swift']),
       objc: PigeonObjcConfig.fromConfig(config['objc']),
+      ast: PigeonAstConfig.fromConfig(config['ast']),
       copyrightHeader: copyrightHeader,
       oneLanguage: oneLanguage,
-      ast: PigeonAstConfig.fromConfig(config['ast']),
       debugGenerators: config['debug_generators'] as bool?,
       basePath: config['base_path'] as String?,
-      skipOutputs: config['skip_outputs'],
+      skipOutputs: config['skip_outputs'], // YamlMap
       outTemplate: config['out_template'] as String?,
     );
   }
@@ -108,318 +105,362 @@ class PigeonConfig {
 
 /// Configuration for Dart code generation.
 class PigeonDartConfig {
-  PigeonDartConfig({this.out, this.testOut, this.packageName});
+  PigeonDartConfig({this.out, this.testOut, this.packageName, this.options});
 
-  /// The output directory for the generated Dart code.
-  final String? out;
+  /// The output details for the generated Dart code.
+  final PigeonOutput? out;
 
-  /// The output directory for the generated Dart test code.
-  final String? testOut;
+  /// The output details for the generated Dart test code.
+  final PigeonOutput? testOut;
 
   /// The package name for the generated Dart code.
   final String? packageName;
 
-  /// Creates a [PigeonDartConfig] from a configuration map.
+  /// Options that control how Dart will be generated.
+  final DartOptions? options;
+
+  /// Creates a [PigeonDartConfig] from the provided config.
   ///
-  /// If the configuration is null and [oneLanguage] is true, it returns null.
-  ///
-  /// Otherwise, it normalizes the 'out' and 'test_out' paths from the
-  /// configuration map and sets the 'package_name'.
+  /// If config is null and oneLanguage is true, it returns null.
   static PigeonDartConfig? fromConfig(dynamic config, bool? oneLanguage) {
     if (config == null && oneLanguage == true) return null;
 
+    final options = config['options'];
+
     return PigeonDartConfig(
-      out: _normalizePath(_getOut(config?['out'] as String?, oneLanguage)),
-      testOut: _normalizePath(_getTestOut(config?['test_out'])),
+      out: PigeonOutput(
+        config['out'] as String? ?? 'lib/pigeons',
+        extension: 'dart',
+      ),
+      testOut: PigeonOutput.fromConfig(
+        _getTestOutPath(config['test_out']),
+        extension: 'dart',
+        append: '_test',
+      ),
       packageName: config?['package_name'] as String?,
+      options: DartOptions(
+        copyrightHeader: options?['copyright_header'] as Iterable<String>?,
+      ),
     );
   }
 
-  /// Gets the output directory for the generated Dart code.
+  /// Returns the generated Dart test code output path.
   ///
-  /// If the 'out' path is null, it returns 'lib/pigeons' if [oneLanguage] is
-  /// not true as required by pigeon.
-  static String? _getOut(String? out, bool? oneLanguage) {
-    return out ?? (oneLanguage != true ? 'lib/pigeons' : null);
-  }
+  /// If config is null, return default if `test` directory exists.
+  ///
+  /// If the config is a boolean and true, return the default.
+  static String? _getTestOutPath(dynamic config) {
+    if (config == null) {
+      final testDir = Directory('test');
+      return testDir.existsSync() ? 'test/pigeons' : null;
+    }
 
-  /// Gets the output directory for the generated Dart test code.
-  ///
-  /// If the 'test_out' path is null, it returns null.
-  ///
-  /// If the 'test_out' is a boolean, it returns 'test/pigeons' if true,
-  /// otherwise null.
-  static String? _getTestOut(dynamic testOut) {
-    if (testOut == null) return null;
-    if (testOut is bool) return testOut ? 'test/pigeons' : null;
-    return testOut as String?;
+    if (config is bool) return config ? 'test/pigeons' : null;
+
+    return config as String;
   }
 }
 
 /// Configuration for C++ code generation.
 class PigeonCppConfig {
-  PigeonCppConfig({this.headerOut, this.sourceOut, this.namespace});
+  PigeonCppConfig({this.headerOut, this.sourceOut, this.options});
 
-  /// The output directory for the generated C++ header files.
-  final String? headerOut;
+  /// The output details for the generated C++ header file.
+  final PigeonOutput? headerOut;
 
-  /// The output directory for the generated C++ source files.
-  final String? sourceOut;
+  /// The output details for the generated C++ source file.
+  final PigeonOutput? sourceOut;
 
-  /// The namespace for the generated C++ code.
-  final String? namespace;
+  /// Options that control how C++ source will be generated.
+  final CppOptions? options;
 
-  /// Creates a [PigeonCppConfig] from a configuration map.
+  /// Creates a [PigeonCppConfig] from the provided config.
   ///
-  /// If the configuration is null, it checks if the 'windows' directory exists
-  /// and returns the default configuration if it does.
+  /// If config is null, return default if `windows` directory exists.
   ///
-  /// If the configuration is a boolean, it returns the default configuration
-  /// if the boolean is true.
-  ///
-  /// Otherwise, it normalizes the 'header_out' and 'source_out' paths from the
-  /// configuration map and sets the 'namespace'.
+  /// If the config is a boolean and true, return the default.
   static PigeonCppConfig? fromConfig(dynamic config) {
+    final cpp = PigeonCppConfig(
+      headerOut: PigeonOutput('windows/runner/pigeons', extension: 'h'),
+      sourceOut: PigeonOutput('windows/runner/pigeons', extension: 'cpp'),
+    );
+
     if (config == null) {
-      final forWindows = Directory('windows').existsSync();
-      return forWindows ? _default : null;
+      final windowsDir = Directory('windows');
+      return windowsDir.existsSync() ? cpp : null;
     }
 
-    if (config is bool) return config ? _default : null;
+    if (config is bool) return config ? cpp : null;
+
+    final options = config['options'];
 
     return PigeonCppConfig(
-      headerOut: _normalizePath(config['header_out'] as String?),
-      sourceOut: _normalizePath(config['source_out'] as String?),
-      namespace: config['namespace'] as String?,
-    );
-  }
-
-  /// The default configuration for C++ code generation.
-  static PigeonCppConfig get _default {
-    return PigeonCppConfig(
-      headerOut: 'windows/runner/pigeons',
-      sourceOut: 'windows/runner/pigeons',
+      headerOut: PigeonOutput.fromConfig(
+        config['header_out'] as String?,
+        extension: cpp.headerOut!.extension,
+      ),
+      sourceOut: PigeonOutput.fromConfig(
+        config['source_out'] as String?,
+        extension: cpp.sourceOut!.extension,
+      ),
+      options: CppOptions(
+        namespace: config('namespace') as String?,
+        copyrightHeader: options?['copyright_header'] as Iterable<String>?,
+      ),
     );
   }
 }
 
 /// Configuration for GObject code generation.
 class PigeonGobjectConfig {
-  PigeonGobjectConfig({this.headerOut, this.sourceOut, this.module});
+  PigeonGobjectConfig({this.headerOut, this.sourceOut, this.options});
 
-  /// The output directory for the generated GObject header files.
-  final String? headerOut;
+  /// The output details for the generated GObject header file.
+  final PigeonOutput? headerOut;
 
-  /// The output directory for the generated GObject source files.
-  final String? sourceOut;
+  /// The output details for the generated GObject source file.
+  final PigeonOutput? sourceOut;
 
-  /// The module name for the generated GObject code.
-  final String? module;
+  /// Options that control how GObject source will be generated.
+  final GObjectOptions? options;
 
-  /// Creates a [PigeonGobjectConfig] from a configuration map.
+  /// Creates a [PigeonGobjectConfig] from the provided config.
   ///
-  /// If the configuration is null, it checks if the 'linux' directory exists
-  /// and returns the default configuration if it does.
+  /// If config is null, return default if `linux` directory exists.
   ///
-  /// If the configuration is a boolean, it returns the default configuration
-  /// if the boolean is true.
-  ///
-  /// Otherwise, it normalizes the 'header_out' and 'source_out' paths from the
-  /// configuration map and sets the 'module'.
+  /// If the config is a boolean and true, return the default.
   static PigeonGobjectConfig? fromConfig(dynamic config) {
+    final gobject = PigeonGobjectConfig(
+      headerOut: PigeonOutput('linux/pigeons', extension: 'h'),
+      sourceOut: PigeonOutput('linux/pigeons', extension: 'cc'),
+    );
+
     if (config == null) {
-      final forLinux = Directory('linux').existsSync();
-      return forLinux ? _default : null;
+      final linuxDir = Directory('linux');
+      return linuxDir.existsSync() ? gobject : null;
     }
 
-    if (config is bool) return config ? _default : null;
+    if (config is bool) return config ? gobject : null;
+
+    final options = config['options'];
 
     return PigeonGobjectConfig(
-      headerOut: _normalizePath(config['header_out'] as String?),
-      sourceOut: _normalizePath(config['source_out'] as String?),
-      module: config['module'] as String?,
-    );
-  }
-
-  /// The default configuration for GObject code generation.
-  static PigeonGobjectConfig get _default {
-    return PigeonGobjectConfig(
-      headerOut: 'linux/pigeons',
-      sourceOut: 'linux/pigeons',
+      headerOut: PigeonOutput.fromConfig(
+        config['header_out'] as String?,
+        extension: gobject.headerOut!.extension,
+      ),
+      sourceOut: PigeonOutput.fromConfig(
+        config['source_out'] as String?,
+        extension: gobject.sourceOut!.extension,
+      ),
+      options: GObjectOptions(
+        module: config('module') as String?,
+        copyrightHeader: options?['copyright_header'] as Iterable<String>?,
+      ),
     );
   }
 }
 
 /// Configuration for Kotlin code generation.
 class PigeonKotlinConfig {
-  PigeonKotlinConfig({this.out, this.package});
+  PigeonKotlinConfig({this.out, this.options});
 
-  /// The output directory for the generated Kotlin code.
-  final String? out;
+  /// The output details for the generated Kotlin code.
+  final PigeonOutput? out;
 
-  /// The package name for the generated Kotlin code.
-  final String? package;
+  /// Options that control how Kotlin will be generated.
+  final KotlinOptions? options;
 
-  /// Creates a [PigeonKotlinConfig] from a configuration map.
+  /// Creates a [PigeonKotlinConfig] from the provided config.
   ///
-  /// If the configuration is null, it checks if the 'android' directory exists
-  /// and returns the default configuration if it does.
+  /// If config is null, return default if `android` directory exists.
   ///
-  /// If the configuration is a boolean, it returns the default configuration
-  /// if the boolean is true.
-  ///
-  /// Otherwise, it normalizes the 'out' path from the configuration map and
-  /// sets the 'package'.
+  /// If the config is a boolean and true, return the default.
   static PigeonKotlinConfig? fromConfig(dynamic config) {
-    final applicationId = _getAndroidApplicationId();
-
     if (config == null) {
-      final forAndroid = Directory('android').existsSync();
-      return forAndroid ? _getDefault(applicationId) : null;
+      final androidDir = Directory('android');
+      return androidDir.existsSync() ? _default : null;
     }
 
-    if (config is bool) return config ? _getDefault(applicationId) : null;
+    if (config is bool) return config ? _default : null;
+
+    final options = config['options'];
 
     return PigeonKotlinConfig(
-      out: _normalizePath(config['out'] as String?),
-      package: config['package'] as String?,
+      out: PigeonOutput.fromConfig(
+        config['out'] as String?,
+        extension: 'kt',
+        pascalCase: true,
+      ),
+      options: KotlinOptions(
+        package: options?['package'] as String?,
+        copyrightHeader: options?['copyright_header'] as Iterable<String>?,
+      ),
     );
   }
 
-  /// Gets the default [PigeonKotlinConfig] based on the Android application ID.
-  static PigeonKotlinConfig? _getDefault(String? applicationId) {
-    if (applicationId == null) return null;
+  /// Returns the default configuration for Kotlin code generation.
+  static PigeonKotlinConfig? get _default {
+    if (android.getApplicationId() == null) return null;
 
     return PigeonKotlinConfig(
-      out: _getAndroidOut('kotlin', applicationId),
-      package: _getAndroidPackage(applicationId),
+      out: PigeonOutput(
+        android.getOutPath('kotlin')!,
+        extension: 'kt',
+        pascalCase: true,
+      ),
+      options: KotlinOptions(
+        package: android.getPackage(),
+      ),
     );
   }
 }
 
 /// Configuration for Java code generation.
 class PigeonJavaConfig {
-  PigeonJavaConfig({this.out, this.package, this.useGeneratedAnnotation});
+  PigeonJavaConfig({this.out, this.options});
 
-  /// The output directory for the generated Java code.
-  final String? out;
+  /// The output details for the generated Java code.
+  final PigeonOutput? out;
 
-  /// The package name for the generated Java code.
-  final String? package;
+  /// Options that control how Java will be generated.
+  final JavaOptions? options;
 
-  /// Whether to use the generated annotation for the generated Java code.
-  final bool? useGeneratedAnnotation;
-
-  /// Creates a [PigeonJavaConfig] from a configuration map.
+  /// Creates a [PigeonJavaConfig] from the provided config.
   ///
-  /// Returns null if the configuration is null.
-  ///
-  /// If the configuration is a boolean, it returns the default configuration
-  /// if the boolean is true.
-  ///
-  /// Otherwise, it normalizes the 'out' path from the configuration map and
-  /// sets the 'package' and 'useGeneratedAnnotation'.
+  /// If the config is a boolean and true, return the default.
   static PigeonJavaConfig? fromConfig(dynamic config) {
+    // For Android, Kotlin is the language of choice.
     if (config == null) return null;
 
-    if (config is bool) {
-      return config ? _getDefault(_getAndroidApplicationId()) : null;
-    }
+    if (config is bool) return config ? _default : null;
+
+    final options = config['options'];
 
     return PigeonJavaConfig(
-      out: _normalizePath(config['out'] as String?),
-      package: config['package'] as String?,
-      useGeneratedAnnotation: config['use_generated_annotation'] as bool?,
+      out: PigeonOutput.fromConfig(
+        config['out'] as String?,
+        extension: 'java',
+        pascalCase: true,
+      ),
+      options: JavaOptions(
+        package: options?['package'] as String?,
+        copyrightHeader: options?['copyright_header'] as Iterable<String>?,
+        useGeneratedAnnotation: options?['use_generated_annotation'] as bool?,
+      ),
     );
   }
 
-  /// Gets the default [PigeonJavaConfig] based on the Android application ID.
-  static PigeonJavaConfig? _getDefault(String? applicationId) {
-    if (applicationId == null) return null;
+  /// Returns the default configuration for Java code generation.
+  static PigeonJavaConfig? get _default {
+    if (android.getApplicationId() == null) return null;
 
     return PigeonJavaConfig(
-      out: _getAndroidOut('java', applicationId),
-      package: _getAndroidPackage(applicationId),
+      out: PigeonOutput(
+        android.getOutPath('java')!,
+        extension: 'java',
+        pascalCase: true,
+      ),
+      options: JavaOptions(
+        package: android.getPackage(),
+      ),
     );
   }
 }
 
 /// Configuration for Swift code generation.
 class PigeonSwiftConfig {
-  PigeonSwiftConfig({this.out});
+  PigeonSwiftConfig({this.out, this.options});
 
-  /// The output directory for the generated Swift code.
-  final String? out;
+  /// The output details for the generated Swift code.
+  final PigeonOutput? out;
 
-  /// Creates a [PigeonSwiftConfig] from a configuration map.
+  /// Options that control how Swift will be generated.
+  final SwiftOptions? options;
+
+  /// Creates a [PigeonSwiftConfig] from the provided config.
   ///
-  /// If the configuration is null, it checks if the 'ios' directory exists
-  /// and returns the default configuration if it does.
+  /// If config is null, return default if `ios` directory exists.
   ///
-  /// If the configuration is a boolean, it returns the default configuration
-  /// if the boolean is true.
-  ///
-  /// Otherwise, it normalizes the 'out' path from the configuration map.
+  /// If the config is a boolean and true, return the default.
   static PigeonSwiftConfig? fromConfig(dynamic config) {
+    final swift = PigeonSwiftConfig(
+      out: PigeonOutput(
+        'ios/Runner/Pigeons',
+        extension: 'swift',
+        pascalCase: true,
+      ),
+    );
+
     if (config == null) {
-      final forIOS = Directory('ios').existsSync();
-      return forIOS ? _default : null;
+      final iosDir = Directory('ios');
+      return iosDir.existsSync() ? swift : null;
     }
 
-    if (config is bool) return config ? _default : null;
+    if (config is bool) return config ? swift : null;
 
-    return PigeonSwiftConfig(out: _normalizePath(config['out'] as String?));
-  }
+    final options = config['options'];
 
-  /// The default configuration for Swift code generation.
-  static PigeonSwiftConfig get _default {
-    return PigeonSwiftConfig(out: 'ios/Runner/Pigeons');
+    return PigeonSwiftConfig(
+      out: PigeonOutput.fromConfig(
+        config['out'] as String?,
+        extension: swift.out!.extension,
+        pascalCase: true,
+      ),
+      options: SwiftOptions(
+        copyrightHeader: options?['copyright_header'] as Iterable<String>?,
+      ),
+    );
   }
 }
 
 /// Configuration for Objective-C code generation.
 class PigeonObjcConfig {
-  PigeonObjcConfig({this.headerOut, this.sourceOut, this.prefix});
+  PigeonObjcConfig({this.headerOut, this.sourceOut, this.options});
 
-  /// The output directory for the generated Objective-C header files.
-  final String? headerOut;
+  /// The output details for the generated Objective-C header code.
+  final PigeonOutput? headerOut;
 
-  /// The output directory for the generated Objective-C source files.
-  final String? sourceOut;
+  /// The output details for the generated Objective-C source code.
+  final PigeonOutput? sourceOut;
 
-  /// The prefix for the generated Objective-C classes.
-  final String? prefix;
+  /// Options that control how Objective-C will be generated.
+  final ObjcOptions? options;
 
-  /// Creates a [PigeonObjcConfig] from a configuration map.
+  /// Creates a [PigeonObjcConfig] from the provided config.
   ///
-  /// If the configuration is null, it checks if the 'macos' directory exists
-  /// and returns the default configuration if it does.
+  /// If config is null, return default if `macos` directory exists.
   ///
-  /// If the configuration is a boolean, it returns the default configuration
-  /// if the boolean is true.
-  ///
-  /// Otherwise, it normalizes the 'header_out' and 'source_out' paths from the
-  /// configuration map and sets the 'prefix'.
+  /// If the config is a boolean and true, return the default.
   static PigeonObjcConfig? fromConfig(dynamic config) {
+    final objc = PigeonObjcConfig(
+      headerOut: PigeonOutput('macos/Runner/Pigeons', extension: 'h'),
+      sourceOut: PigeonOutput('macos/Runner/Pigeons', extension: 'm'),
+      options: ObjcOptions(prefix: 'Pigeon'),
+    );
+
     if (config == null) {
-      final forMacOS = Directory('macos').existsSync();
-      return forMacOS ? _default : null;
+      final macosDir = Directory('macos');
+      return macosDir.existsSync() ? objc : null;
     }
 
-    if (config is bool) return config ? _default : null;
+    if (config is bool) return config ? objc : null;
+
+    final options = config['options'];
 
     return PigeonObjcConfig(
-      headerOut: _normalizePath(config['header_out'] as String?),
-      sourceOut: _normalizePath(config['source_out'] as String?),
-      prefix: config['prefix'] as String?,
-    );
-  }
-
-  /// The default configuration for Objective-C code generation.
-  static PigeonObjcConfig get _default {
-    return PigeonObjcConfig(
-      headerOut: 'macos/Runner/Pigeons',
-      sourceOut: 'macos/Runner/Pigeons',
+      headerOut: PigeonOutput.fromConfig(
+        config['header_out'] as String?,
+        extension: objc.headerOut!.extension,
+      ),
+      sourceOut: PigeonOutput.fromConfig(
+        config['source_out'] as String?,
+        extension: objc.sourceOut!.extension,
+      ),
+      options: ObjcOptions(
+        prefix: options?['prefix'] as String? ?? 'Pigeon',
+        copyrightHeader: options?['copyright_header'] as Iterable<String>?,
+      ),
     );
   }
 }
@@ -428,82 +469,66 @@ class PigeonObjcConfig {
 class PigeonAstConfig {
   PigeonAstConfig({this.out});
 
-  /// The output directory for the generated AST files.
-  final String? out;
+  /// The output details for the generated AST code.
+  final PigeonOutput? out;
 
-  /// Creates a [PigeonAstConfig] from a configuration map.
+  /// Creates a [PigeonAstConfig] from the provided config.
   ///
-  /// If the configuration is null, it returns null.
-  ///
-  /// If the configuration is a boolean, it returns the default configuration
-  /// if the boolean is true.
-  ///
-  /// Otherwise, it normalizes the 'out' path from the configuration map.
+  /// If the config is a boolean and true, return the default.
   static PigeonAstConfig? fromConfig(dynamic config) {
     if (config == null) return null;
 
-    if (config is bool) return config ? _default : null;
+    final ast = PigeonAstConfig(
+      out: PigeonOutput('output/pigeons', extension: 'ast'),
+    );
 
-    return PigeonAstConfig(out: _normalizePath(config['out'] as String?));
+    if (config is bool) return config ? ast : null;
+
+    return PigeonAstConfig(
+      out: PigeonOutput.fromConfig(
+        config['out'] as String?,
+        extension: ast.out!.extension,
+      ),
+    );
   }
+}
 
-  /// The default configuration for AST generation.
-  static PigeonAstConfig get _default {
-    return PigeonAstConfig(out: 'output/pigeons');
+/// The output details for a file generated by Pigeon.
+class PigeonOutput {
+  PigeonOutput(
+    String path, {
+    required this.extension,
+    this.pascalCase = false,
+    this.append,
+  }) : path = normalize(path.trim());
+
+  /// The folder path to the output file.
+  final String path;
+
+  /// The extension of the output file.
+  final String extension;
+
+  /// Whether to convert the output file name to PascalCase.
+  final bool pascalCase;
+
+  /// The string to append to the output file name.
+  final String? append;
+
+  /// Creates a [PigeonOutput] from the provided details.
+  static PigeonOutput? fromConfig(
+    String? path, {
+    required String extension,
+    bool pascalCase = false,
+    String? append,
+  }) {
+    // If path is not given, return null.
+    if (path == null) return null;
+
+    return PigeonOutput(
+      path,
+      extension: extension,
+      pascalCase: pascalCase,
+      append: append,
+    );
   }
 }
-
-/// Normalize the given path string.
-///
-/// This function takes an optional path string, trims any leading or trailing
-/// spaces, and normalizes the path.
-///
-/// @param pathStr The path string to be normalized.
-///
-/// @return The normalized path string, or null if the pathStr is null.
-String? _normalizePath(String? pathStr) {
-  return pathStr != null ? path.normalize(pathStr.trim()) : null;
-}
-
-/// Retrieves the Android application ID from the `android/app/build.gradle`
-/// file if it exists.
-///
-/// @return The Android application ID, or null if the file does not exist or
-/// the application ID is not found.
-String? _getAndroidApplicationId() {
-  final gradleFile = File('android/app/build.gradle');
-
-  if (gradleFile.existsSync()) {
-    final content = gradleFile.readAsStringSync();
-    final regex = RegExp(r'applicationId\s*=\s*"([^"]+)"');
-    final match = regex.firstMatch(content);
-
-    if (match != null) {
-      return match.group(1)!;
-    }
-  }
-
-  log.warning(
-    'Failed to get Android application ID from android/app/build.gradle',
-  );
-
-  return null;
-}
-
-/// Generates the output directory for the given language and application ID.
-///
-/// @param language The language of the generated code.
-///
-/// @param applicationId The Android application ID.
-///
-/// @return The output directory for the generated code.
-String _getAndroidOut(String language, String applicationId) {
-  return 'android/app/src/main/$language/${applicationId.replaceAll('.', '/')}/pigeons';
-}
-
-/// Generates the package name for the given application ID.
-///
-/// @param applicationId The Android application ID.
-///
-/// @return The package name for the generated code.
-String _getAndroidPackage(String applicationId) => '$applicationId.pigeons';
