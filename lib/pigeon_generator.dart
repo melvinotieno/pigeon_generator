@@ -8,7 +8,7 @@ import 'src/pigeon_validator.dart';
 
 /// Creates a [PigeonBuilder] using the provided [BuilderOptions].
 ///
-/// This function extracts the [PigeonConfig] from the [BuilderOptions],
+/// This function extracts the [PigeonConfig] from the [BuilderOptions] config,
 /// validates the configuration, and then returns a [PigeonBuilder] instance
 /// initialized with the validated configuration.
 ///
@@ -16,7 +16,7 @@ import 'src/pigeon_validator.dart';
 ///
 /// Returns a [PigeonBuilder] instance with the validated [PigeonConfig].
 Builder pigeonBuilder(BuilderOptions options) {
-  final pigeonConfig = PigeonConfig.fromBuilderOptions(options);
+  final pigeonConfig = PigeonConfig.fromConfig(options.config);
 
   // Validate the pigeon config
   PigeonValidator.validate(pigeonConfig);
