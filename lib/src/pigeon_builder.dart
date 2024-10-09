@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:build/build.dart';
 import 'package:path/path.dart' as path;
+import 'package:pigeon/generator_tools.dart' show mergeMaps;
 import 'package:pigeon/pigeon.dart';
 
 import 'pigeon_config.dart';
@@ -72,7 +73,7 @@ class PigeonBuilder extends Builder {
         buildStep,
       );
 
-      await Pigeon.runWithOptions(scratchSpacePigeonOptions);
+      await PigeonExtension.runWithGenerator(scratchSpacePigeonOptions);
 
       // Copy the generated outputs to their respective locations.
       for (final allowedOutput in allowedOutputs) {
@@ -87,109 +88,110 @@ class PigeonBuilder extends Builder {
 
   /// Returns the [PigeonOptions] for the given input file.
   PigeonOptions _getPigeonOptions(String input) {
-    final inputName = path.basenameWithoutExtension(input);
+    final parseResults = PigeonExtension.parseInput(input);
 
-    /// Converts a string to PascalCase.
-    String pascalCase(String name) {
-      final regex = RegExp(r'(_[a-z])|(^[a-z])');
-      return name.replaceAllMapped(regex, (Match match) {
-        return match[0]!.replaceAll('_', '').toUpperCase();
-      });
+    if (parseResults.errors.isNotEmpty) {
+      throw Exception('Errors found in input: ${parseResults.errors}');
     }
 
-    /// Returns the path for the given output file.
-    String? getPath(
-      String? output,
-      String extension, {
-      String? append,
-      bool? pascal,
-    }) {
-      if (output == null) return null;
+    final fileName = path.basenameWithoutExtension(input);
 
-      var outputName = inputName;
-
-      if (append != null) outputName += append;
-
-      if (pascal == true) outputName = pascalCase(outputName);
-
-      // Replace outTemplate name with outputName and extension with extension.
-      var outputFileName = pigeonConfig.outTemplate;
-      outputFileName = outputFileName.replaceAll('name', outputName);
-      outputFileName = outputFileName.replaceAll('extension', extension);
-
-      return path.join(output, outputFileName);
-    }
-
-    String? cppHeaderOut = pigeonConfig.cpp?.headerOut;
-    String? cppSourceOut = pigeonConfig.cpp?.sourceOut;
-    String? gobjectHeaderOut = pigeonConfig.gobject?.headerOut;
-    String? gobjectSourceOut = pigeonConfig.gobject?.sourceOut;
-    String? kotlinOut = pigeonConfig.kotlin?.out;
-    String? javaOut = pigeonConfig.java?.out;
-    String? swiftOut = pigeonConfig.swift?.out;
-    String? objcHeaderOut = pigeonConfig.objc?.headerOut;
-    String? objcSourceOut = pigeonConfig.objc?.sourceOut;
-
-    if (pigeonConfig.skipOutputs != null) {
-      final skipOutputs = pigeonConfig.skipOutputs?[inputName];
-
-      if (skipOutputs != null) {
-        for (final skipOutput in skipOutputs) {
-          switch (skipOutput) {
-            case 'android':
-              kotlinOut = null;
-              javaOut = null;
-              break;
-            case 'ios':
-              swiftOut = null;
-              break;
-            case 'macos':
-              objcHeaderOut = null;
-              objcSourceOut = null;
-              break;
-            case 'windows':
-              cppHeaderOut = null;
-              cppSourceOut = null;
-              break;
-            case 'linux':
-              gobjectHeaderOut = null;
-              gobjectSourceOut = null;
-              break;
-          }
-        }
-      }
-    }
-
-    return PigeonOptions(
+    PigeonOptions options = PigeonOptions(
       input: input,
-      dartOut: getPath(pigeonConfig.dart?.out, 'dart'),
-      dartTestOut: getPath(pigeonConfig.dart?.testOut, 'dart', append: '_test'),
+      dartOut: _getOutPath(fileName, pigeonConfig.dart?.out),
+      dartTestOut: _getOutPath(fileName, pigeonConfig.dart?.testOut),
       dartPackageName: pigeonConfig.dart?.packageName,
-      cppHeaderOut: getPath(cppHeaderOut, 'h'),
-      cppSourceOut: getPath(cppSourceOut, 'cpp'),
-      cppOptions: CppOptions(namespace: pigeonConfig.cpp?.namespace),
-      gobjectHeaderOut: getPath(gobjectHeaderOut, 'h'),
-      gobjectSourceOut: getPath(gobjectSourceOut, 'cc'),
-      gobjectOptions: GObjectOptions(module: pigeonConfig.gobject?.module),
-      kotlinOut: getPath(kotlinOut, 'kt', pascal: true),
-      kotlinOptions: KotlinOptions(
-        package: pigeonConfig.kotlin?.package,
-        errorClassName: "${pascalCase(inputName)}FlutterError",
-      ),
-      javaOut: getPath(javaOut, 'java', pascal: true),
-      javaOptions: JavaOptions(
-        package: pigeonConfig.java?.package,
-        useGeneratedAnnotation: pigeonConfig.java?.useGeneratedAnnotation,
-      ),
-      swiftOut: getPath(swiftOut, 'swift', pascal: true),
-      objcHeaderOut: getPath(objcHeaderOut, 'h'),
-      objcSourceOut: getPath(objcSourceOut, 'm'),
-      objcOptions: ObjcOptions(prefix: pigeonConfig.objc?.prefix),
-      astOut: getPath(pigeonConfig.ast?.out, 'ast'),
-      debugGenerators: pigeonConfig.debugGenerators,
+      dartOptions: pigeonConfig.dart?.options,
+      cppHeaderOut: _getOutPath(fileName, pigeonConfig.cpp?.headerOut),
+      cppSourceOut: _getOutPath(fileName, pigeonConfig.cpp?.sourceOut),
+      cppOptions: pigeonConfig.cpp?.options,
+      gobjectHeaderOut: _getOutPath(fileName, pigeonConfig.gobject?.headerOut),
+      gobjectSourceOut: _getOutPath(fileName, pigeonConfig.gobject?.sourceOut),
+      gobjectOptions: pigeonConfig.gobject?.options,
+      kotlinOut: _getOutPath(fileName, pigeonConfig.kotlin?.out),
+      kotlinOptions: pigeonConfig.kotlin?.options,
+      javaOut: _getOutPath(fileName, pigeonConfig.java?.out),
+      javaOptions: pigeonConfig.java?.options,
+      swiftOut: _getOutPath(fileName, pigeonConfig.swift?.out),
+      swiftOptions: pigeonConfig.swift?.options,
+      objcHeaderOut: _getOutPath(fileName, pigeonConfig.objc?.headerOut),
+      objcSourceOut: _getOutPath(fileName, pigeonConfig.objc?.sourceOut),
+      objcOptions: pigeonConfig.objc?.options,
+      astOut: _getOutPath(fileName, pigeonConfig.ast?.out),
       copyrightHeader: pigeonConfig.copyrightHeader,
+      debugGenerators: pigeonConfig.debugGenerators,
       oneLanguage: pigeonConfig.oneLanguage,
       basePath: pigeonConfig.basePath,
     );
+
+    if (parseResults.pigeonOptions != null) {
+      options = PigeonOptions.fromMap(
+        mergeMaps(options.toMap(), parseResults.pigeonOptions!),
+      );
+    }
+
+    if (pigeonConfig.skipOutputs?.containsKey(fileName) != true) return options;
+
+    final optionsMap = options.toMap();
+
+    for (final skipOutput in pigeonConfig.skipOutputs![fileName]) {
+      switch (skipOutput) {
+        case 'android':
+          optionsMap.remove('javaOut');
+          optionsMap.remove('javaOptions');
+          optionsMap.remove('kotlinOut');
+          optionsMap.remove('kotlinOptions');
+          break;
+        case 'ios':
+          optionsMap.remove('swiftOut');
+          optionsMap.remove('swiftOptions');
+        case 'macos':
+          optionsMap.remove('objcHeaderOut');
+          optionsMap.remove('objcSourceOut');
+          optionsMap.remove('objcOptions');
+          break;
+        case 'windows':
+          optionsMap.remove('cppHeaderOut');
+          optionsMap.remove('cppSourceOut');
+          optionsMap.remove('cppOptions');
+          break;
+        case 'linux':
+          optionsMap.remove('gobjectHeaderOut');
+          optionsMap.remove('gobjectSourceOut');
+          optionsMap.remove('gobjectOptions');
+          break;
+      }
+    }
+
+    return PigeonOptions.fromMap(optionsMap);
+  }
+
+  /// Returns the file path for the given input name and output options.
+  String? _getOutPath(String inputName, PigeonOutput? output) {
+    if (output == null) return null;
+
+    String fileName = inputName;
+
+    // Append the output.append to the fileName.
+    if (output.append != null) fileName += output.append!;
+
+    // Convert the fileName to PascalCase.
+    if (output.pascalCase) fileName = _pascalCase(fileName);
+
+    // Replace outTemplate name and extension respectively.
+    String outputName = pigeonConfig.outTemplate;
+    outputName = outputName.replaceAll('name', fileName);
+    outputName = outputName.replaceAll('extension', output.extension);
+
+    return path.join(output.path, outputName);
+  }
+
+  /// Converts a string to PascalCase.
+  String _pascalCase(String name) {
+    final regex = RegExp(r'(_[a-z])|(^[a-z])');
+
+    return name.replaceAllMapped(regex, (Match match) {
+      return match[0]!.replaceAll('_', '').toUpperCase();
+    });
   }
 }
