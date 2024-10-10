@@ -1,5 +1,5 @@
 name: pigeon_generator
-version: 2.0.3
+version: 2.0.4
 description: Integrate build_runner with pigeon code generation to automate the process of generating platform channels.
 homepage: https://github.com/melvinotieno/pigeon_generator
 repository: https://github.com/melvinotieno/pigeon_generator
