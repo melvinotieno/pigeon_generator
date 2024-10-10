@@ -96,6 +96,14 @@ class PigeonBuilder extends Builder {
 
     final fileName = path.basenameWithoutExtension(input);
 
+    KotlinOptions kotlinOptions = KotlinOptions(
+      errorClassName: "${_pascalCase(fileName)}FlutterError",
+    );
+
+    if (pigeonConfig.kotlin?.options != null) {
+      kotlinOptions = kotlinOptions.merge(pigeonConfig.kotlin!.options!);
+    }
+
     PigeonOptions options = PigeonOptions(
       input: input,
       dartOut: _getOutPath(fileName, pigeonConfig.dart?.out),
@@ -109,7 +117,7 @@ class PigeonBuilder extends Builder {
       gobjectSourceOut: _getOutPath(fileName, pigeonConfig.gobject?.sourceOut),
       gobjectOptions: pigeonConfig.gobject?.options,
       kotlinOut: _getOutPath(fileName, pigeonConfig.kotlin?.out),
-      kotlinOptions: pigeonConfig.kotlin?.options,
+      kotlinOptions: kotlinOptions,
       javaOut: _getOutPath(fileName, pigeonConfig.java?.out),
       javaOptions: pigeonConfig.java?.options,
       swiftOut: _getOutPath(fileName, pigeonConfig.swift?.out),
