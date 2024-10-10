@@ -125,15 +125,15 @@ class PigeonDartConfig {
   static PigeonDartConfig? fromConfig(dynamic config, bool? oneLanguage) {
     if (config == null && oneLanguage == true) return null;
 
-    final options = config['options'];
+    final options = config?['options'];
 
     return PigeonDartConfig(
       out: PigeonOutput(
-        config['out'] as String? ?? 'lib/pigeons',
+        config?['out'] as String? ?? 'lib/pigeons',
         extension: 'dart',
       ),
       testOut: PigeonOutput.fromConfig(
-        _getTestOutPath(config['test_out']),
+        _getTestOutPath(config?['test_out']),
         extension: 'dart',
         append: '_test',
       ),
