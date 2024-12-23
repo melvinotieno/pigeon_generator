@@ -6,11 +6,21 @@ import 'package:build/build.dart';
 class AndroidUtilities {
   static final AndroidUtilities _instance = AndroidUtilities._internal();
 
+  String? _srcRoot;
+
   String? _applicationId;
 
   bool _applicationIdFetched = false;
 
-  AndroidUtilities._internal();
+  AndroidUtilities._internal() {
+    if (_srcRoot != null) return;
+
+    if (Directory('android/src').existsSync()) {
+      _srcRoot = "android";
+    } else {
+      _srcRoot = "android/app";
+    }
+  }
 
   /// Returns the singleton instance of [AndroidUtilities].
   factory AndroidUtilities() {
@@ -22,31 +32,20 @@ class AndroidUtilities {
   /// Returns null if the file does not exist or the applicationId is not found.
   String? getApplicationId() {
     if (_applicationId == null && !_applicationIdFetched) {
-      final appGradleFile = File('android/app/build.gradle');
-      final libGradleFile = File('android/build.gradle');
+      final gradleFile = File('$_srcRoot/build.gradle');
 
-      if (appGradleFile.existsSync()) {
-        final content = appGradleFile.readAsStringSync();
-        final regex = RegExp(r'applicationId\s*=\s*"([^"]+)"');
+      if (gradleFile.existsSync()) {
+        final content = gradleFile.readAsStringSync();
+        final regex = RegExp(r'applicationId|namespace\s*=\s*"([^"]+)"');
         final match = regex.firstMatch(content);
 
         if (match != null) {
           _applicationId = match.group(1)!;
         } else {
-          log.warning('android/app/build.gradle has no applicationId defined.');
-        }
-      } else if (libGradleFile.existsSync()) {
-        final content = libGradleFile.readAsStringSync();
-        final regex = RegExp(r'namespace\s*=\s*"([^"]+)"');
-        final match = regex.firstMatch(content);
-
-        if (match != null) {
-          _applicationId = match.group(1)!;
-        } else {
-          log.warning('android/build.gradle has no applicationId defined.');
+          log.warning('applicationId/namespace not found (${gradleFile.path})');
         }
       } else {
-        log.warning('build.gradle file does not exist.');
+        log.warning('build.gradle file does not exist (${gradleFile.path})');
       }
 
       // Because applicationId can be null, we use this to check if the
@@ -63,7 +62,7 @@ class AndroidUtilities {
 
     if (applicationId == null) return null;
 
-    return 'android/app/src/main/$language/${applicationId.replaceAll('.', '/')}/pigeons';
+    return '$_srcRoot/src/main/$language/${applicationId.replaceAll('.', '/')}/pigeons';
   }
 
   /// Returns the package name for the location of the generated pigeon files.
