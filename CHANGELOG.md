@@ -1,3 +1,7 @@
+## 2.0.5
+
+- Support for android library projects. The generator will attempt to find package name from android/build.gradle (assuming it is a library project), if android/app/build.gradle is not found.
+
 ## 2.0.4
 
 - Fix null pointer exception when dart config is not set in build.yaml.

@@ -22,10 +22,11 @@ class AndroidUtilities {
   /// Returns null if the file does not exist or the applicationId is not found.
   String? getApplicationId() {
     if (_applicationId == null && !_applicationIdFetched) {
-      final gradleFile = File('android/app/build.gradle');
+      final appGradleFile = File('android/app/build.gradle');
+      final libGradleFile = File('android/build.gradle');
 
-      if (gradleFile.existsSync()) {
-        final content = gradleFile.readAsStringSync();
+      if (appGradleFile.existsSync()) {
+        final content = appGradleFile.readAsStringSync();
         final regex = RegExp(r'applicationId\s*=\s*"([^"]+)"');
         final match = regex.firstMatch(content);
 
@@ -34,8 +35,18 @@ class AndroidUtilities {
         } else {
           log.warning('android/app/build.gradle has no applicationId defined.');
         }
+      } else if (libGradleFile.existsSync()) {
+        final content = libGradleFile.readAsStringSync();
+        final regex = RegExp(r'namespace\s*=\s*"([^"]+)"');
+        final match = regex.firstMatch(content);
+
+        if (match != null) {
+          _applicationId = match.group(1)!;
+        } else {
+          log.warning('android/build.gradle has no applicationId defined.');
+        }
       } else {
-        log.warning('android/app/build.gradle does not exist.');
+        log.warning('build.gradle file does not exist.');
       }
 
       // Because applicationId can be null, we use this to check if the
