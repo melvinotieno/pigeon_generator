@@ -16,9 +16,9 @@ import 'src/pigeon_validator.dart';
 ///
 /// Returns a [PigeonBuilder] instance with the validated [PigeonConfig].
 Builder pigeonBuilder(BuilderOptions options) {
-  final pigeonConfig = PigeonConfig.fromConfig(options.config);
+  final pigeonConfig = PigeonConfig.fromMap(options.config);
 
-  // Validate the pigeon config
+  // Validate the pigeon config first.
   PigeonValidator.validate(pigeonConfig);
 
   return PigeonBuilder(pigeonConfig);
