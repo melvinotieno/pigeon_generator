@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:build/build.dart';
 import 'package:path/path.dart' as path;
-import 'package:pigeon/generator_tools.dart' show mergeMaps;
 import 'package:pigeon/pigeon.dart';
 
 import 'pigeon_config.dart';
@@ -38,9 +37,7 @@ class PigeonBuilder extends Builder {
     // If inputs directory does not exist, return empty result
     if (!inputsDirectory.existsSync()) return result;
 
-    final inputs = inputsDirectory.listSync();
-
-    for (final input in inputs) {
+    for (final input in inputsDirectory.listSync()) {
       if (input is File && input.path.endsWith('.dart')) {
         final inputPath = input.path;
         final pigeonOptions = _getPigeonOptions(inputPath);
@@ -73,7 +70,7 @@ class PigeonBuilder extends Builder {
         buildStep,
       );
 
-      await PigeonExtension.runWithGenerator(scratchSpacePigeonOptions);
+      await Pigeon.runWithOptions(scratchSpacePigeonOptions);
 
       // Copy the generated outputs to their respective locations.
       for (final allowedOutput in allowedOutputs) {
@@ -88,7 +85,8 @@ class PigeonBuilder extends Builder {
 
   /// Returns the [PigeonOptions] for the given input file.
   PigeonOptions _getPigeonOptions(String input) {
-    final parseResults = PigeonExtension.parseInput(input);
+    final Pigeon pigeon = Pigeon.setup();
+    final parseResults = pigeon.parseFile(input);
 
     if (parseResults.errors.isNotEmpty) {
       throw Exception('Errors found in input: ${parseResults.errors}');
@@ -106,7 +104,7 @@ class PigeonBuilder extends Builder {
 
     PigeonOptions options = PigeonOptions(
       input: input,
-      dartOut: _getOutPath(fileName, pigeonConfig.dart?.out),
+      dartOut: pigeonConfig.dart?.out?.pathFromInput(fileName),
       dartTestOut: _getOutPath(fileName, pigeonConfig.dart?.testOut),
       dartPackageName: pigeonConfig.dart?.packageName,
       dartOptions: pigeonConfig.dart?.options,
@@ -128,14 +126,12 @@ class PigeonBuilder extends Builder {
       astOut: _getOutPath(fileName, pigeonConfig.ast?.out),
       copyrightHeader: pigeonConfig.copyrightHeader,
       debugGenerators: pigeonConfig.debugGenerators,
-      oneLanguage: pigeonConfig.oneLanguage,
       basePath: pigeonConfig.basePath,
     );
 
     if (parseResults.pigeonOptions != null) {
-      options = PigeonOptions.fromMap(
-        mergeMaps(options.toMap(), parseResults.pigeonOptions!),
-      );
+      final overrides = PigeonOptions.fromMap(parseResults.pigeonOptions!);
+      options = options.merge(overrides);
     }
 
     if (pigeonConfig.skipOutputs?.containsKey(fileName) != true) return options;
