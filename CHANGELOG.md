@@ -1,3 +1,7 @@
+## 3.0.0
+
+- Minimum Pigeon version is now 25.0.0.
+
 ## 2.0.6
 
 - Support for android library projects. The generator will attempt to find package name from android/build.gradle (assuming it is a library project), if android/app/build.gradle is not found.
