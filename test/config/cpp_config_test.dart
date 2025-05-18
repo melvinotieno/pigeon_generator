@@ -26,34 +26,49 @@ void main() {
 
       expect(cppConfig.headerOut?.path, 'windows/runner');
       expect(cppConfig.headerOut?.extension, 'h');
+      expect(cppConfig.headerOut?.pascalCase, isFalse);
+      expect(cppConfig.headerOut?.append, isNull);
       expect(cppConfig.sourceOut?.path, 'windows/runner');
       expect(cppConfig.sourceOut?.extension, 'cpp');
+      expect(cppConfig.sourceOut?.pascalCase, isFalse);
+      expect(cppConfig.sourceOut?.append, isNull);
       expect(cppConfig.options, isNull);
     });
 
-    test('should create CppConfig with default values when windows exists', () {
-      Directory('windows').createSync();
+    test(
+      'should create CppConfig with default values when windows directory exists',
+      () {
+        Directory('windows').createSync();
 
-      try {
-        final cppConfig = CppConfig.fromMap(null);
+        try {
+          final cppConfig = CppConfig.fromMap(null);
 
-        expect(cppConfig.headerOut?.path, 'windows/runner');
-        expect(cppConfig.headerOut?.extension, 'h');
-        expect(cppConfig.sourceOut?.path, 'windows/runner');
-        expect(cppConfig.sourceOut?.extension, 'cpp');
-        expect(cppConfig.options, isNull);
-      } finally {
-        Directory('windows').deleteSync();
-      }
-    });
+          expect(cppConfig.headerOut?.path, 'windows/runner');
+          expect(cppConfig.headerOut?.extension, 'h');
+          expect(cppConfig.headerOut?.pascalCase, isFalse);
+          expect(cppConfig.headerOut?.append, isNull);
+          expect(cppConfig.sourceOut?.path, 'windows/runner');
+          expect(cppConfig.sourceOut?.extension, 'cpp');
+          expect(cppConfig.sourceOut?.pascalCase, isFalse);
+          expect(cppConfig.sourceOut?.append, isNull);
+          expect(cppConfig.options, isNull);
+        } finally {
+          Directory('windows').deleteSync();
+        }
+      },
+    );
 
     test('should create CppConfig with default values for missing fields', () {
       final cppConfig = CppConfig.fromMap({});
 
       expect(cppConfig.headerOut?.path, 'windows/runner');
       expect(cppConfig.headerOut?.extension, 'h');
+      expect(cppConfig.headerOut?.pascalCase, isFalse);
+      expect(cppConfig.headerOut?.append, isNull);
       expect(cppConfig.sourceOut?.path, 'windows/runner');
       expect(cppConfig.sourceOut?.extension, 'cpp');
+      expect(cppConfig.sourceOut?.pascalCase, isFalse);
+      expect(cppConfig.sourceOut?.append, isNull);
       expect(cppConfig.options, isNull);
     });
 
@@ -73,8 +88,12 @@ void main() {
 
       expect(cppConfig.headerOut?.path, 'path/to/header');
       expect(cppConfig.headerOut?.extension, 'h');
+      expect(cppConfig.headerOut?.pascalCase, isFalse);
+      expect(cppConfig.headerOut?.append, isNull);
       expect(cppConfig.sourceOut?.path, 'path/to/source');
       expect(cppConfig.sourceOut?.extension, 'cpp');
+      expect(cppConfig.sourceOut?.pascalCase, isFalse);
+      expect(cppConfig.sourceOut?.append, isNull);
       expect(cppConfig.options?.headerIncludePath, 'include/path');
       expect(cppConfig.options?.namespace, 'namespace');
       expect(cppConfig.options?.copyrightHeader, ['Copyright (c) 2023']);
