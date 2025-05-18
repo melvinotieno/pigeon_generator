@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('DartConfig', () {
-    test('should return DartConfig of null values when map is false', () {
+    test('should create DartConfig of null values when map is false', () {
       final dartConfig = DartConfig.fromMap(false);
 
       expect(dartConfig.out, isNull);
@@ -17,8 +17,12 @@ void main() {
 
       expect(dartConfig.out?.path, 'lib');
       expect(dartConfig.out?.extension, 'dart');
+      expect(dartConfig.out?.pascalCase, isFalse);
+      expect(dartConfig.out?.append, isNull);
       expect(dartConfig.testOut?.path, 'test');
       expect(dartConfig.testOut?.extension, 'dart');
+      expect(dartConfig.testOut?.pascalCase, isFalse);
+      expect(dartConfig.testOut?.append, '_test');
       expect(dartConfig.packageName, isNull);
       expect(dartConfig.options, isNull);
     });
@@ -27,7 +31,13 @@ void main() {
       final dartConfig = DartConfig.fromMap(null);
 
       expect(dartConfig.out?.path, 'lib');
+      expect(dartConfig.out?.extension, 'dart');
+      expect(dartConfig.out?.pascalCase, isFalse);
+      expect(dartConfig.out?.append, isNull);
       expect(dartConfig.testOut?.path, 'test');
+      expect(dartConfig.testOut?.extension, 'dart');
+      expect(dartConfig.testOut?.pascalCase, isFalse);
+      expect(dartConfig.testOut?.append, '_test');
       expect(dartConfig.packageName, isNull);
       expect(dartConfig.options, isNull);
     });
@@ -54,7 +64,7 @@ void main() {
       expect(dartConfig.testOut?.path, config['test_out']);
       expect(dartConfig.testOut?.extension, 'dart');
       expect(dartConfig.testOut?.pascalCase, isFalse);
-      expect(dartConfig.testOut?.append, isNull);
+      expect(dartConfig.testOut?.append, '_test');
       expect(dartConfig.packageName, config['package_name']);
       expect(dartConfig.options?.copyrightHeader, options['copyright_header']);
       expect(dartConfig.options?.sourceOutPath, options['source_out_path']);
