@@ -5,43 +5,36 @@ import 'package:path/path.dart' as path;
 import 'package:pigeon/pigeon.dart';
 
 import 'pigeon_config.dart';
-import 'pigeon_extensions.dart';
 import 'pigeon_scratch_space.dart';
 
 /// A [Builder] that uses Pigeon to generate code from Dart files.
 class PigeonBuilder extends Builder {
   /// Creates a new [PigeonBuilder] with the given [PigeonConfig].
-  PigeonBuilder(this.pigeonConfig);
+  PigeonBuilder(this.config);
 
   /// The Pigeon configuration to use.
-  final PigeonConfig pigeonConfig;
+  final PigeonConfig config;
 
   /// The path context to use for file operations.
-  final path.Context _pathContext = path.Context(
-    style: Platform.isWindows ? path.Style.posix : path.Style.platform,
-  );
-
-  /// The resource for managing the Pigeon scratch space.
-  final Resource<PigeonScratchSpace> _scratchSpaceResource = Resource(
-    () => PigeonScratchSpace(),
-    dispose: (scratchSpace) => scratchSpace.delete(),
-  );
+  final path.Context _pathContext = path.Context();
 
   @override
   Map<String, List<String>> get buildExtensions {
     final result = <String, List<String>>{};
 
-    final inputsPath = _pathContext.normalize(pigeonConfig.inputs);
+    final inputsPath = _pathContext.normalize(config.inputs);
     final inputsDirectory = Directory(inputsPath);
 
-    // If inputs directory does not exist, return empty result
+    // If inputs directory does not exist, return empty result.
     if (!inputsDirectory.existsSync()) return result;
 
-    for (final input in inputsDirectory.listSync()) {
-      if (input is File && input.path.endsWith('.dart')) {
-        final inputPath = input.path;
-        final pigeonOptions = _getPigeonOptions(inputPath);
-        result[inputPath] = pigeonOptions.getOutputs();
+    // Iterate through all Dart files in the inputs directory.
+    // For each file, get the Pigeon options and their outputs.
+    for (final entity in inputsDirectory.listSync()) {
+      if (entity is File && entity.path.endsWith('.dart')) {
+        final input = entity.path;
+        final pigeonOptions = config.getPigeonOptions(input);
+        result[input] = pigeonOptions.getOutputs();
       }
     }
 
@@ -54,23 +47,32 @@ class PigeonBuilder extends Builder {
     final allowedOutputs = buildStep.allowedOutputs;
 
     if (await buildStep.canRead(inputId)) {
-      final pigeonOptions = _getPigeonOptions(inputId.path);
+      final pigeonOptions = config.getPigeonOptions(inputId.path);
 
-      final scratchSpace = await buildStep.fetchResource(
-        _scratchSpaceResource,
-      );
+      final scratchSpace = await buildStep.fetchResource(_scratchSpaceResource);
 
       final scratchSpacePigeonOptions = scratchSpace.getPigeonOptions(
         pigeonOptions,
         allowedOutputs,
       );
 
-      await scratchSpace.ensureAssets(
-        [AssetId(inputId.package, 'pubspec.yaml')],
-        buildStep,
-      );
+      await scratchSpace.ensureAssets([
+        AssetId(inputId.package, 'pubspec.yaml'),
+      ], buildStep);
 
-      await Pigeon.runWithOptions(scratchSpacePigeonOptions);
+      // Make sure that all output directories exist.
+      for (final output in scratchSpacePigeonOptions.getOutputs()) {
+        final Directory outputDir = File(output).parent;
+
+        if (!await outputDir.exists()) {
+          await outputDir.create(recursive: true);
+        }
+      }
+
+      await Pigeon.runWithOptions(
+        scratchSpacePigeonOptions,
+        mergeDefinitionFileOptions: false,
+      );
 
       // Copy the generated outputs to their respective locations.
       for (final allowedOutput in allowedOutputs) {
@@ -82,120 +84,62 @@ class PigeonBuilder extends Builder {
       }
     }
   }
+}
 
-  /// Returns the [PigeonOptions] for the given input file.
-  PigeonOptions _getPigeonOptions(String input) {
-    final Pigeon pigeon = Pigeon.setup();
-    final parseResults = pigeon.parseFile(input);
+final _scratchSpace = PigeonScratchSpace();
 
-    if (parseResults.errors.isNotEmpty) {
-      throw Exception('Errors found in input: ${parseResults.errors}');
+/// A resource that manages a scratch space for Pigeon code generation.
+///
+/// This resource ensures that the scratch space is created before use and
+/// cleaned up after the build process is complete. It provides a temporary
+/// directory for Pigeon to generate its output files, which are then copied
+/// to their final locations.
+final _scratchSpaceResource = Resource<PigeonScratchSpace>(
+  () {
+    if (!_scratchSpace.exists) {
+      _scratchSpace.tempDir.createSync(recursive: true);
+      _scratchSpace.exists = true;
     }
 
-    final fileName = path.basenameWithoutExtension(input);
-
-    KotlinOptions kotlinOptions = KotlinOptions(
-      errorClassName: "${_pascalCase(fileName)}FlutterError",
-    );
-
-    if (pigeonConfig.kotlin?.options != null) {
-      kotlinOptions = kotlinOptions.merge(pigeonConfig.kotlin!.options!);
-    }
-
-    PigeonOptions options = PigeonOptions(
-      input: input,
-      dartOut: pigeonConfig.dart?.out?.pathFromInput(fileName),
-      dartTestOut: _getOutPath(fileName, pigeonConfig.dart?.testOut),
-      dartPackageName: pigeonConfig.dart?.packageName,
-      dartOptions: pigeonConfig.dart?.options,
-      cppHeaderOut: _getOutPath(fileName, pigeonConfig.cpp?.headerOut),
-      cppSourceOut: _getOutPath(fileName, pigeonConfig.cpp?.sourceOut),
-      cppOptions: pigeonConfig.cpp?.options,
-      gobjectHeaderOut: _getOutPath(fileName, pigeonConfig.gobject?.headerOut),
-      gobjectSourceOut: _getOutPath(fileName, pigeonConfig.gobject?.sourceOut),
-      gobjectOptions: pigeonConfig.gobject?.options,
-      kotlinOut: _getOutPath(fileName, pigeonConfig.kotlin?.out),
-      kotlinOptions: kotlinOptions,
-      javaOut: _getOutPath(fileName, pigeonConfig.java?.out),
-      javaOptions: pigeonConfig.java?.options,
-      swiftOut: _getOutPath(fileName, pigeonConfig.swift?.out),
-      swiftOptions: pigeonConfig.swift?.options,
-      objcHeaderOut: _getOutPath(fileName, pigeonConfig.objc?.headerOut),
-      objcSourceOut: _getOutPath(fileName, pigeonConfig.objc?.sourceOut),
-      objcOptions: pigeonConfig.objc?.options,
-      astOut: _getOutPath(fileName, pigeonConfig.ast?.out),
-      copyrightHeader: pigeonConfig.copyrightHeader,
-      debugGenerators: pigeonConfig.debugGenerators,
-      basePath: pigeonConfig.basePath,
-    );
-
-    if (parseResults.pigeonOptions != null) {
-      final overrides = PigeonOptions.fromMap(parseResults.pigeonOptions!);
-      options = options.merge(overrides);
-    }
-
-    if (pigeonConfig.skipOutputs?.containsKey(fileName) != true) return options;
-
-    final optionsMap = options.toMap();
-
-    for (final skipOutput in pigeonConfig.skipOutputs![fileName]) {
-      switch (skipOutput) {
-        case 'android':
-          optionsMap.remove('javaOut');
-          optionsMap.remove('javaOptions');
-          optionsMap.remove('kotlinOut');
-          optionsMap.remove('kotlinOptions');
-          break;
-        case 'ios':
-          optionsMap.remove('swiftOut');
-          optionsMap.remove('swiftOptions');
-        case 'macos':
-          optionsMap.remove('objcHeaderOut');
-          optionsMap.remove('objcSourceOut');
-          optionsMap.remove('objcOptions');
-          break;
-        case 'windows':
-          optionsMap.remove('cppHeaderOut');
-          optionsMap.remove('cppSourceOut');
-          optionsMap.remove('cppOptions');
-          break;
-        case 'linux':
-          optionsMap.remove('gobjectHeaderOut');
-          optionsMap.remove('gobjectSourceOut');
-          optionsMap.remove('gobjectOptions');
-          break;
+    return _scratchSpace;
+  },
+  beforeExit: () async {
+    try {
+      if (_scratchSpace.exists) {
+        await _scratchSpace.delete();
+      } else {
+        await _scratchSpace.tempDir.delete(recursive: true);
       }
+    } on FileSystemException {
+      log.warning('Failed to delete temp dir: ${_scratchSpace.tempDir.path}.');
     }
+  },
+);
 
-    return PigeonOptions.fromMap(optionsMap);
-  }
+extension on PigeonOptions {
+  /// Gets the list of output file paths based on the current [PigeonOptions].
+  ///
+  /// This method collects all the output file paths specified in the
+  /// [PigeonOptions] for various languages and configurations.
+  ///
+  /// Returns:
+  ///   A [List<String>] containing all non-null output file paths.
+  List<String> getOutputs() {
+    final outputs = [
+      dartOut,
+      dartTestOut,
+      cppHeaderOut,
+      cppSourceOut,
+      gobjectHeaderOut,
+      gobjectSourceOut,
+      kotlinOut,
+      javaOut,
+      swiftOut,
+      objcHeaderOut,
+      objcSourceOut,
+      astOut,
+    ];
 
-  /// Returns the file path for the given input name and output options.
-  String? _getOutPath(String inputName, PigeonOutput? output) {
-    if (output == null) return null;
-
-    String fileName = inputName;
-
-    // Append the output.append to the fileName.
-    if (output.append != null) fileName += output.append!;
-
-    // Convert the fileName to PascalCase.
-    if (output.pascalCase) fileName = _pascalCase(fileName);
-
-    // Replace outTemplate name and extension respectively.
-    String outputName = pigeonConfig.outTemplate;
-    outputName = outputName.replaceAll('name', fileName);
-    outputName = outputName.replaceAll('extension', output.extension);
-
-    return path.join(output.path, outputName);
-  }
-
-  /// Converts a string to PascalCase.
-  String _pascalCase(String name) {
-    final regex = RegExp(r'(_[a-z])|(^[a-z])');
-
-    return name.replaceAllMapped(regex, (Match match) {
-      return match[0]!.replaceAll('_', '').toUpperCase();
-    });
+    return outputs.where((output) => output != null).cast<String>().toList();
   }
 }
