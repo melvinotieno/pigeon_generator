@@ -38,3 +38,18 @@ class OutputConfig {
     );
   }
 }
+
+extension StringExtension on String {
+  /// Converts the string to PascalCase.
+  String get pascalCase {
+    // Remove leading and trailing underscores.
+    final trimmed = replaceAll(RegExp(r'^_+|_+$'), '');
+
+    final regex = RegExp(r'(_[a-z])|(^[a-z])');
+
+    // Convert the matched substring to uppercase removing any underscores.
+    return trimmed.replaceAllMapped(regex, (Match match) {
+      return match[0]!.replaceAll('_', '').toUpperCase();
+    });
+  }
+}
