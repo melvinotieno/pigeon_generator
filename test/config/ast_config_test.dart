@@ -18,16 +18,32 @@ void main() {
 
       test('should return default config when map is true', () {
         final config = AstConfig.fromMap(true);
+        final out = config.out!;
 
-        expect(config.out, isNotNull);
+        expect(out.path, 'ast');
+        expect(out.extension, 'ast');
+        expect(out.pascalCase, isFalse);
+        expect(out.append, isNull);
+      });
+
+      test('should create config with default values for missing fields', () {
+        final config = AstConfig.fromMap({});
+        final out = config.out!;
+
+        expect(out.path, 'ast');
+        expect(out.extension, 'ast');
+        expect(out.pascalCase, isFalse);
+        expect(out.append, isNull);
       });
 
       test('should create config with provided values', () {
         final config = AstConfig.fromMap({'out': 'custom/ast'});
+        final out = config.out!;
 
-        expect(config.out, isNotNull);
-        expect(config.out!.path, 'custom/ast');
-        expect(config.out!.extension, 'ast');
+        expect(out.path, 'custom/ast');
+        expect(out.extension, 'ast');
+        expect(out.pascalCase, isFalse);
+        expect(out.append, isNull);
       });
     });
   });
