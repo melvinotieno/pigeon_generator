@@ -106,7 +106,7 @@ class Android {
     final match = RegExp(_regex).firstMatch(content);
 
     if (match != null) {
-      return match.group(1)!;
+      return match.group(2);
     } else {
       log.warning('applicationId/namespace not found in ${fileToRead.path}');
       return null;
