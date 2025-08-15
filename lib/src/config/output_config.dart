@@ -42,14 +42,19 @@ class OutputConfig {
 extension StringExtension on String {
   /// Converts the string to PascalCase.
   String get pascalCase {
-    // Remove leading and trailing underscores.
-    final trimmed = replaceAll(RegExp(r'^_+|_+$'), '');
+    // Remove leading and trailing underscores and hyphens.
+    final trimmed = replaceAll(RegExp(r'^[_-]+|[_-]+$'), '');
 
-    final regex = RegExp(r'(_[a-z])|(^[a-z])');
+    final regex = RegExp(r'([_-][a-z])|(^[a-z])');
 
-    // Convert the matched substring to uppercase removing any underscores.
+    // Apply transformation, removing underscores and hyphens.
     return trimmed.replaceAllMapped(regex, (Match match) {
-      return match[0]!.replaceAll('_', '').toUpperCase();
+      return match[0]!.replaceAll(RegExp(r'[_-]'), '').toUpperCase();
     });
+  }
+
+  /// Applies a transformation function to the string.
+  String let(String Function(String) transform) {
+    return transform(this);
   }
 }
