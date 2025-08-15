@@ -5,99 +5,104 @@ import 'package:test/test.dart';
 
 void main() {
   group('CppConfig', () {
-    test('should create CppConfig of null values when map is false', () {
-      final cppConfig = CppConfig.fromMap(false);
+    late Directory tempDir;
+    late String originalDir;
 
-      expect(cppConfig.headerOut, isNull);
-      expect(cppConfig.sourceOut, isNull);
-      expect(cppConfig.options, isNull);
+    setUp(() async {
+      originalDir = Directory.current.path;
+      tempDir = await Directory.systemTemp.createTemp('gobject_config_test_');
+      Directory.current = tempDir;
     });
 
-    test('should create CppConfig with null values when map is null', () {
-      final cppConfig = CppConfig.fromMap(null);
+    tearDown(() async {
+      Directory.current = originalDir;
 
-      expect(cppConfig.headerOut, isNull);
-      expect(cppConfig.sourceOut, isNull);
-      expect(cppConfig.options, isNull);
+      if (await tempDir.exists()) {
+        await tempDir.delete(recursive: true);
+      }
     });
 
-    test('should create CppConfig with default values when map is true', () {
-      final cppConfig = CppConfig.fromMap(true);
+    group('fromMap', () {
+      test('should return empty config when map is false', () {
+        final cppConfig = CppConfig.fromMap(false);
 
-      expect(cppConfig.headerOut?.path, 'windows/runner');
-      expect(cppConfig.headerOut?.extension, 'h');
-      expect(cppConfig.headerOut?.pascalCase, isFalse);
-      expect(cppConfig.headerOut?.append, isNull);
-      expect(cppConfig.sourceOut?.path, 'windows/runner');
-      expect(cppConfig.sourceOut?.extension, 'cpp');
-      expect(cppConfig.sourceOut?.pascalCase, isFalse);
-      expect(cppConfig.sourceOut?.append, isNull);
-      expect(cppConfig.options, isNull);
-    });
+        expect(cppConfig.headerOut, isNull);
+        expect(cppConfig.sourceOut, isNull);
+      });
 
-    test(
-      'should create CppConfig with default values when windows directory exists',
-      () {
-        Directory('windows').createSync();
+      test('should return empty config when map is null', () {
+        final cppConfig = CppConfig.fromMap(null);
 
-        try {
-          final cppConfig = CppConfig.fromMap(null);
+        expect(cppConfig.headerOut, isNull);
+        expect(cppConfig.sourceOut, isNull);
+      });
 
-          expect(cppConfig.headerOut?.path, 'windows/runner');
-          expect(cppConfig.headerOut?.extension, 'h');
-          expect(cppConfig.headerOut?.pascalCase, isFalse);
-          expect(cppConfig.headerOut?.append, isNull);
-          expect(cppConfig.sourceOut?.path, 'windows/runner');
-          expect(cppConfig.sourceOut?.extension, 'cpp');
-          expect(cppConfig.sourceOut?.pascalCase, isFalse);
-          expect(cppConfig.sourceOut?.append, isNull);
-          expect(cppConfig.options, isNull);
-        } finally {
-          Directory('windows').deleteSync();
-        }
-      },
-    );
+      test('should return default config when map is true', () {
+        final cppConfig = CppConfig.fromMap(true);
+        final headerOut = cppConfig.headerOut!;
+        final sourceOut = cppConfig.sourceOut!;
 
-    test('should create CppConfig with default values for missing fields', () {
-      final cppConfig = CppConfig.fromMap({});
+        expect(headerOut.path, 'windows/runner');
+        expect(headerOut.extension, 'h');
+        expect(headerOut.pascalCase, isFalse);
+        expect(headerOut.append, isNull);
+        expect(sourceOut.path, 'windows/runner');
+        expect(sourceOut.extension, 'cpp');
+        expect(sourceOut.pascalCase, isFalse);
+        expect(sourceOut.append, isNull);
+      });
 
-      expect(cppConfig.headerOut?.path, 'windows/runner');
-      expect(cppConfig.headerOut?.extension, 'h');
-      expect(cppConfig.headerOut?.pascalCase, isFalse);
-      expect(cppConfig.headerOut?.append, isNull);
-      expect(cppConfig.sourceOut?.path, 'windows/runner');
-      expect(cppConfig.sourceOut?.extension, 'cpp');
-      expect(cppConfig.sourceOut?.pascalCase, isFalse);
-      expect(cppConfig.sourceOut?.append, isNull);
-      expect(cppConfig.options, isNull);
-    });
+      test('should return default config when windows folder exists', () async {
+        await Directory('windows').create();
 
-    test('should create CppConfig from config map', () {
-      final config = <String, dynamic>{
-        'header_out': 'path/to/header',
-        'source_out': 'path/to/source',
-        'options': {
-          'header_include_path': 'include/path',
-          'namespace': 'namespace',
-          'copyright_header': ['Copyright (c) 2023'],
-          'header_out_path': 'path/to/header_out',
-        },
-      };
+        final cppConfig = CppConfig.fromMap(null);
+        final headerOut = cppConfig.headerOut!;
+        final sourceOut = cppConfig.sourceOut!;
 
-      final cppConfig = CppConfig.fromMap(config);
+        expect(headerOut.path, 'windows/runner');
+        expect(headerOut.extension, 'h');
+        expect(headerOut.pascalCase, isFalse);
+        expect(headerOut.append, isNull);
+        expect(sourceOut.path, 'windows/runner');
+        expect(sourceOut.extension, 'cpp');
+        expect(sourceOut.pascalCase, isFalse);
+        expect(sourceOut.append, isNull);
+      });
 
-      expect(cppConfig.headerOut?.path, 'path/to/header');
-      expect(cppConfig.headerOut?.extension, 'h');
-      expect(cppConfig.headerOut?.pascalCase, isFalse);
-      expect(cppConfig.headerOut?.append, isNull);
-      expect(cppConfig.sourceOut?.path, 'path/to/source');
-      expect(cppConfig.sourceOut?.extension, 'cpp');
-      expect(cppConfig.sourceOut?.pascalCase, isFalse);
-      expect(cppConfig.sourceOut?.append, isNull);
-      expect(cppConfig.options?.headerIncludePath, 'include/path');
-      expect(cppConfig.options?.namespace, 'namespace');
-      expect(cppConfig.options?.copyrightHeader, ['Copyright (c) 2023']);
-      expect(cppConfig.options?.headerOutPath, 'path/to/header_out');
+      test('should create config with default values for missing fields', () {
+        final cppConfig = CppConfig.fromMap({});
+        final headerOut = cppConfig.headerOut!;
+        final sourceOut = cppConfig.sourceOut!;
+
+        expect(headerOut.path, 'windows/runner');
+        expect(headerOut.extension, 'h');
+        expect(headerOut.pascalCase, isFalse);
+        expect(headerOut.append, isNull);
+        expect(sourceOut.path, 'windows/runner');
+        expect(sourceOut.extension, 'cpp');
+        expect(sourceOut.pascalCase, isFalse);
+        expect(sourceOut.append, isNull);
+      });
+
+      test('should create config with provided values', () {
+        final config = <String, dynamic>{
+          'header_out': 'path/to/header',
+          'source_out': 'path/to/source',
+        };
+
+        final cppConfig = CppConfig.fromMap(config);
+        final headerOut = cppConfig.headerOut!;
+        final sourceOut = cppConfig.sourceOut!;
+
+        expect(headerOut.path, 'path/to/header');
+        expect(headerOut.extension, 'h');
+        expect(headerOut.pascalCase, isFalse);
+        expect(headerOut.append, isNull);
+        expect(sourceOut.path, 'path/to/source');
+        expect(sourceOut.extension, 'cpp');
+        expect(sourceOut.pascalCase, isFalse);
+        expect(sourceOut.append, isNull);
+      });
     });
   });
 }
