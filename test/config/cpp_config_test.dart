@@ -10,7 +10,7 @@ void main() {
 
     setUp(() async {
       originalDir = Directory.current.path;
-      tempDir = await Directory.systemTemp.createTemp('gobject_config_test_');
+      tempDir = await Directory.systemTemp.createTemp('cpp_config_test_');
       Directory.current = tempDir;
     });
 
