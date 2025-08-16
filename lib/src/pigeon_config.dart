@@ -1,7 +1,6 @@
 import 'dart:io';
 
-import 'package:build/build.dart';
-import 'package:path/path.dart' show join, normalize;
+import 'package:path/path.dart' as path;
 import 'package:pigeon/pigeon.dart';
 
 import 'config/ast_config.dart';
@@ -11,44 +10,55 @@ import 'config/gobject_config.dart';
 import 'config/java_config.dart';
 import 'config/kotlin_config.dart';
 import 'config/objc_config.dart';
+import 'config/output_config.dart';
 import 'config/swift_config.dart';
+import 'pigeon_extensions.dart';
 
+/// Configuration for Pigeon code generation.
 class PigeonConfig {
   PigeonConfig._internal({
     required this.inputs,
-    this.dart,
-    this.objc,
-    this.java,
-    this.swift,
-    this.kotlin,
-    this.cpp,
-    this.gobject,
-    this.ast,
+    required this.dart,
+    required this.objc,
+    required this.java,
+    required this.swift,
+    required this.kotlin,
+    required this.cpp,
+    required this.gobject,
+    required this.ast,
     this.copyrightHeader,
     this.debugGenerators,
     this.basePath,
     this.skipOutputs,
-    this.outFolder,
     String? outTemplate,
   }) : outTemplate = outTemplate ?? 'name.g.extension';
 
+  /// Path to Pigeon input files.
   final String inputs;
 
-  final DartConfig? dart;
+  /// Configuration for Dart code generation.
+  final DartConfig dart;
 
-  final ObjcConfig? objc;
+  /// Configuration for Objective-C code generation.
+  final ObjcConfig objc;
 
-  final JavaConfig? java;
+  /// Configuration for Java code generation.
+  final JavaConfig java;
 
-  final SwiftConfig? swift;
+  /// Configuration for Swift code generation.
+  final SwiftConfig swift;
 
-  final KotlinConfig? kotlin;
+  /// Configuration for Kotlin code generation.
+  final KotlinConfig kotlin;
 
-  final CppConfig? cpp;
+  /// Configuration for C++ code generation.
+  final CppConfig cpp;
 
-  final GObjectConfig? gobject;
+  /// Configuration for GObject code generation.
+  final GObjectConfig gobject;
 
-  final AstConfig? ast;
+  /// Configuration for AST code generation.
+  final AstConfig ast;
 
   /// Path to a copyright header that will get prepended to generated code.
   final String? copyrightHeader;
@@ -59,14 +69,23 @@ class PigeonConfig {
   /// A base path to be prepended to all provided output paths.
   final String? basePath;
 
-  final Map<String, dynamic>? skipOutputs;
+  /// Declares which code generation outputs should be skipped.
+  final dynamic skipOutputs;
 
-  final String? outFolder;
-
+  /// The template for naming the generated files.
   final String outTemplate;
 
+  /// Creates a new [PigeonConfig] from a map.
   factory PigeonConfig.fromMap(Map<String, dynamic> map) {
-    final inputs = normalize((map['inputs'] as String? ?? 'pigeons').trim());
+    final inputs = map['inputs'] as String? ?? 'pigeons';
+
+    String? copyrightHeader = map['copyrightHeader'] as String?;
+    if (copyrightHeader == null) {
+      // If copyright.txt file exists in inputs, set as copyright header.
+      final copyrightPath = path.join(inputs, 'copyright.txt');
+      final hasCopyright = File(copyrightPath).existsSync();
+      if (hasCopyright) copyrightHeader = copyrightPath;
+    }
 
     return PigeonConfig._internal(
       inputs: inputs,
@@ -78,44 +97,64 @@ class PigeonConfig {
       cpp: CppConfig.fromMap(map['cpp']),
       gobject: GObjectConfig.fromMap(map['gobject']),
       ast: AstConfig.fromMap(map['ast']),
-      copyrightHeader: _getCopyrightHeader(inputs, map['copyright_header']),
-      debugGenerators: map['debug_generators'] as bool?,
-      basePath: map['base_path'] as String?,
-      outFolder: map['out_folder'] as String?,
-      outTemplate: map['out_template'] as String?,
+      copyrightHeader: copyrightHeader,
+      debugGenerators: map['debugGenerators'] as bool?,
+      basePath: map['basePath'] as String?,
+      skipOutputs: map['skipOutputs'], // YamlMap
+      outTemplate: map['outTemplate'],
     );
   }
 
+  /// Get pigeon options for a specific input file.
   PigeonOptions getPigeonOptions(String input) {
-    return PigeonOptions();
-  }
+    final fileName = path.basenameWithoutExtension(input);
 
-  static String? _getCopyrightHeader(String inputs, String? defaultPath) {
-    if (defaultPath != null) {
-      final path = normalize(defaultPath.trim());
+    String? getOutputPath(OutputConfig? config) {
+      if (config == null) return null;
 
-      // If file exists, return the path, otherwise, attempt to find a
-      // copyright header file in the inputs path.
-      if (File(path).existsSync()) {
-        return path;
-      } else {
-        log.warning(
-          'Warning: The copyright_header path ["$path"] specified in the '
-          'configuration does not exist. If a copyright_header.txt or '
-          'copyright.txt file is found in the inputs path [$inputs] provided, '
-          'then it will be used instead.',
-        );
-      }
+      String name = fileName;
+
+      // Append to name if append is provided.
+      if (config.append != null) name += config.append!;
+
+      // Use PascalCase if specified.
+      if (config.pascalCase) name = name.pascalCase;
+
+      // Replace outTemplate placeholders.
+      String outputName = outTemplate;
+      outputName = outputName.replaceAll('name', name);
+      outputName = outputName.replaceAll('extension', config.extension);
+
+      return path.join(config.path, outputName);
     }
 
-    final possibleFiles = ['copyright.txt', 'copyright_header.txt'];
-    for (final file in possibleFiles) {
-      final path = normalize(join(inputs, file));
-      if (File(path).existsSync()) {
-        return path;
-      }
+    PigeonOptions options = PigeonOptions(
+      input: input,
+      dartOut: getOutputPath(dart.out),
+      dartTestOut: getOutputPath(dart.testOut),
+      dartPackageName: dart.packageName,
+      dartOptions: dart.getOptions(fileName),
+      objcHeaderOut: getOutputPath(objc.headerOut),
+      objcSourceOut: getOutputPath(objc.sourceOut),
+      javaOut: getOutputPath(java.out),
+      javaOptions: java.options,
+      swiftOut: getOutputPath(swift.out),
+      swiftOptions: swift.getOptions(fileName),
+      kotlinOut: getOutputPath(kotlin.out),
+      kotlinOptions: kotlin.getOptions(fileName),
+      cppHeaderOut: getOutputPath(cpp.headerOut),
+      cppSourceOut: getOutputPath(cpp.sourceOut),
+      gobjectHeaderOut: getOutputPath(gobject.headerOut),
+      gobjectSourceOut: getOutputPath(gobject.sourceOut),
+      astOut: getOutputPath(ast.out),
+      debugGenerators: debugGenerators,
+      basePath: basePath,
+    );
+
+    if (skipOutputs?.containsKey(fileName) == true) {
+      options = options.skipOutputs(skipOutputs[fileName]);
     }
 
-    return null;
+    return options.mergeInputOptions(input);
   }
 }
