@@ -8,13 +8,13 @@ void main() {
     late Directory tempDir;
     late String originalDir;
 
-    setUp(() async {
+    setUpAll(() async {
       originalDir = Directory.current.path;
       tempDir = await Directory.systemTemp.createTemp('gobject_config_test_');
       Directory.current = tempDir;
     });
 
-    tearDown(() async {
+    tearDownAll(() async {
       Directory.current = originalDir;
 
       if (await tempDir.exists()) {
