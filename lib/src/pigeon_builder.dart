@@ -5,6 +5,7 @@ import 'package:path/path.dart' as path;
 import 'package:pigeon/pigeon.dart';
 
 import 'pigeon_config.dart';
+import 'pigeon_extensions.dart';
 import 'pigeon_scratch_space.dart';
 
 /// A [Builder] that uses Pigeon to generate code from Dart files.
@@ -51,6 +52,8 @@ class PigeonBuilder extends Builder {
 
       final scratchSpace = await buildStep.fetchResource(_scratchSpaceResource);
 
+      // Code will be generated to the scratch space resource, therefore, the
+      // PigeonOptions will be modified to reflect the scratch space paths.
       final scratchSpacePigeonOptions = scratchSpace.getPigeonOptions(
         pigeonOptions,
         allowedOutputs,
@@ -115,31 +118,3 @@ final _scratchSpaceResource = Resource<PigeonScratchSpace>(
     }
   },
 );
-
-extension on PigeonOptions {
-  /// Gets the list of output file paths based on the current [PigeonOptions].
-  ///
-  /// This method collects all the output file paths specified in the
-  /// [PigeonOptions] for various languages and configurations.
-  ///
-  /// Returns:
-  ///   A [List<String>] containing all non-null output file paths.
-  List<String> getOutputs() {
-    final outputs = [
-      dartOut,
-      dartTestOut,
-      cppHeaderOut,
-      cppSourceOut,
-      gobjectHeaderOut,
-      gobjectSourceOut,
-      kotlinOut,
-      javaOut,
-      swiftOut,
-      objcHeaderOut,
-      objcSourceOut,
-      astOut,
-    ];
-
-    return outputs.where((output) => output != null).cast<String>().toList();
-  }
-}
