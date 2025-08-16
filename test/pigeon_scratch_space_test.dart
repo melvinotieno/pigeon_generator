@@ -1,33 +1,26 @@
-import 'dart:io';
-
 import 'package:build/build.dart';
-import 'package:path/path.dart' as path;
 import 'package:pigeon/pigeon.dart';
 import 'package:pigeon_generator/src/pigeon_scratch_space.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('PigeonScratchSpace Tests', () {
+  group('PigeonScratchSpace', () {
     late PigeonScratchSpace scratchSpace;
-    late Directory tempDir;
+    late String libPath;
 
-    setUp(() {
+    setUpAll(() {
       scratchSpace = PigeonScratchSpace();
-      tempDir = scratchSpace.tempDir;
+      libPath = '${scratchSpace.tempDir.path}/package/test_package/lib';
     });
 
-    tearDown(() {
+    tearDownAll(() {
       scratchSpace.delete();
     });
 
     test('fileFor returns correct file path', () {
       final assetId = AssetId('test_package', 'lib/test.dart');
       final file = scratchSpace.fileFor(assetId);
-
-      final expectedPath = path.join(
-        tempDir.path,
-        'package/test_package/lib/test.dart',
-      );
+      final expectedPath = '$libPath/test.dart';
 
       expect(file.path, expectedPath);
     });
@@ -63,59 +56,24 @@ void main() {
         AssetId('test_package', 'lib/ast_out.ast'),
       ];
 
+      // Get the updated Pigeon options with the correct paths
       final updatedOptions = scratchSpace.getPigeonOptions(
         pigeonOptions,
         allowedOutputs,
       );
 
-      expect(
-        updatedOptions.dartOut,
-        path.join(tempDir.path, 'package/test_package/lib/dart_out.dart'),
-      );
-      expect(
-        updatedOptions.dartTestOut,
-        path.join(tempDir.path, 'package/test_package/lib/dart_test_out.dart'),
-      );
-      expect(
-        updatedOptions.cppHeaderOut,
-        path.join(tempDir.path, 'package/test_package/lib/cpp_header.h'),
-      );
-      expect(
-        updatedOptions.cppSourceOut,
-        path.join(tempDir.path, 'package/test_package/lib/cpp_source.cpp'),
-      );
-      expect(
-        updatedOptions.gobjectHeaderOut,
-        path.join(tempDir.path, 'package/test_package/lib/gobject_header.h'),
-      );
-      expect(
-        updatedOptions.gobjectSourceOut,
-        path.join(tempDir.path, 'package/test_package/lib/gobject_source.cpp'),
-      );
-      expect(
-        updatedOptions.kotlinOut,
-        path.join(tempDir.path, 'package/test_package/lib/kotlin_out.kt'),
-      );
-      expect(
-        updatedOptions.javaOut,
-        path.join(tempDir.path, 'package/test_package/lib/java_out.java'),
-      );
-      expect(
-        updatedOptions.swiftOut,
-        path.join(tempDir.path, 'package/test_package/lib/swift_out.swift'),
-      );
-      expect(
-        updatedOptions.objcHeaderOut,
-        path.join(tempDir.path, 'package/test_package/lib/objc_header.h'),
-      );
-      expect(
-        updatedOptions.objcSourceOut,
-        path.join(tempDir.path, 'package/test_package/lib/objc_source.m'),
-      );
-      expect(
-        updatedOptions.astOut,
-        path.join(tempDir.path, 'package/test_package/lib/ast_out.ast'),
-      );
+      expect(updatedOptions.dartOut, '$libPath/dart_out.dart');
+      expect(updatedOptions.dartTestOut, '$libPath/dart_test_out.dart');
+      expect(updatedOptions.cppHeaderOut, '$libPath/cpp_header.h');
+      expect(updatedOptions.cppSourceOut, '$libPath/cpp_source.cpp');
+      expect(updatedOptions.gobjectHeaderOut, '$libPath/gobject_header.h');
+      expect(updatedOptions.gobjectSourceOut, '$libPath/gobject_source.cpp');
+      expect(updatedOptions.kotlinOut, '$libPath/kotlin_out.kt');
+      expect(updatedOptions.javaOut, '$libPath/java_out.java');
+      expect(updatedOptions.swiftOut, '$libPath/swift_out.swift');
+      expect(updatedOptions.objcHeaderOut, '$libPath/objc_header.h');
+      expect(updatedOptions.objcSourceOut, '$libPath/objc_source.m');
+      expect(updatedOptions.astOut, '$libPath/ast_out.ast');
     });
   });
 }
