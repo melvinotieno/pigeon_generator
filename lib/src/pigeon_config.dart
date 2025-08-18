@@ -30,6 +30,7 @@ class PigeonConfig {
     this.debugGenerators,
     this.basePath,
     this.skipOutputs,
+    this.outFolder,
     String? outTemplate,
   }) : outTemplate = outTemplate ?? 'name.g.extension';
 
@@ -72,6 +73,9 @@ class PigeonConfig {
   /// Declares which code generation outputs should be skipped.
   final dynamic skipOutputs;
 
+  /// The output folder for generated files.
+  final String? outFolder;
+
   /// The template for naming the generated files.
   final String outTemplate;
 
@@ -87,21 +91,24 @@ class PigeonConfig {
       if (hasCopyright) copyrightHeader = copyrightPath;
     }
 
+    String? outFolder = map['out_folder'] as String?;
+
     return PigeonConfig._internal(
       inputs: inputs,
-      dart: DartConfig.fromMap(map['dart']),
-      objc: ObjcConfig.fromMap(map['objc']),
-      java: JavaConfig.fromMap(map['java']),
-      swift: SwiftConfig.fromMap(map['swift']),
-      kotlin: KotlinConfig.fromMap(map['kotlin']),
-      cpp: CppConfig.fromMap(map['cpp']),
-      gobject: GObjectConfig.fromMap(map['gobject']),
-      ast: AstConfig.fromMap(map['ast']),
+      dart: DartConfig.fromMap(map['dart'], outFolder),
+      objc: ObjcConfig.fromMap(map['objc'], outFolder),
+      java: JavaConfig.fromMap(map['java'], outFolder),
+      swift: SwiftConfig.fromMap(map['swift'], outFolder),
+      kotlin: KotlinConfig.fromMap(map['kotlin'], outFolder),
+      cpp: CppConfig.fromMap(map['cpp'], outFolder),
+      gobject: GObjectConfig.fromMap(map['gobject'], outFolder),
+      ast: AstConfig.fromMap(map['ast'], outFolder),
       copyrightHeader: copyrightHeader,
-      debugGenerators: map['debugGenerators'] as bool?,
-      basePath: map['basePath'] as String?,
-      skipOutputs: map['skipOutputs'], // YamlMap
-      outTemplate: map['outTemplate'],
+      debugGenerators: map['debug_generators'] as bool?,
+      basePath: map['base_path'] as String?,
+      skipOutputs: map['skip_outputs'], // YamlMap
+      outFolder: outFolder,
+      outTemplate: map['out_template'] as String?,
     );
   }
 
