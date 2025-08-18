@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:pigeon_generator/src/config/java_config.dart';
+import 'package:pigeon_generator/src/utilities/android.dart';
 import 'package:test/test.dart';
 
 const appIdGradle = '''
@@ -14,18 +15,20 @@ void main() {
     late Directory tempDir;
     late String originalDir;
 
-    setUpAll(() async {
+    setUp(() async {
       originalDir = Directory.current.path;
       tempDir = await Directory.systemTemp.createTemp('java_config_test_');
       Directory.current = tempDir;
     });
 
-    tearDownAll(() async {
+    tearDown(() async {
       Directory.current = originalDir;
 
       if (tempDir.existsSync()) {
         await tempDir.delete(recursive: true);
       }
+
+      Android.reset();
     });
 
     group('fromMap', () {
