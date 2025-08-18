@@ -42,11 +42,11 @@ void main() {
         final headerOut = objcConfig.headerOut!;
         final sourceOut = objcConfig.sourceOut!;
 
-        expect(headerOut.path, 'macos');
+        expect(headerOut.path, 'macos/Runner');
         expect(headerOut.extension, 'h');
         expect(headerOut.pascalCase, isFalse);
         expect(headerOut.append, isNull);
-        expect(sourceOut.path, 'macos');
+        expect(sourceOut.path, 'macos/Runner');
         expect(sourceOut.extension, 'm');
         expect(sourceOut.pascalCase, isFalse);
         expect(sourceOut.append, isNull);
@@ -59,11 +59,11 @@ void main() {
         final headerOut = objcConfig.headerOut!;
         final sourceOut = objcConfig.sourceOut!;
 
-        expect(headerOut.path, 'macos');
+        expect(headerOut.path, 'macos/Runner');
         expect(headerOut.extension, 'h');
         expect(headerOut.pascalCase, isFalse);
         expect(headerOut.append, isNull);
-        expect(sourceOut.path, 'macos');
+        expect(sourceOut.path, 'macos/Runner');
         expect(sourceOut.extension, 'm');
         expect(sourceOut.pascalCase, isFalse);
         expect(sourceOut.append, isNull);
@@ -74,11 +74,11 @@ void main() {
         final headerOut = objcConfig.headerOut!;
         final sourceOut = objcConfig.sourceOut!;
 
-        expect(headerOut.path, 'macos');
+        expect(headerOut.path, 'macos/Runner');
         expect(headerOut.extension, 'h');
         expect(headerOut.pascalCase, isFalse);
         expect(headerOut.append, isNull);
-        expect(sourceOut.path, 'macos');
+        expect(sourceOut.path, 'macos/Runner');
         expect(sourceOut.extension, 'm');
         expect(sourceOut.pascalCase, isFalse);
         expect(sourceOut.append, isNull);
