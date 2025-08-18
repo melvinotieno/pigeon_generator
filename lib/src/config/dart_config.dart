@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:path/path.dart';
+import 'package:path/path.dart' show join;
 import 'package:pigeon/pigeon.dart';
 
 import 'output_config.dart';
@@ -31,15 +31,15 @@ class DartConfig {
   /// If the map is `false`, it returns a [DartConfig] with null values.
   ///
   /// If the map is `null`, it returns a [DartConfig] with default values.
-  factory DartConfig.fromMap(dynamic map) {
+  factory DartConfig.fromMap(dynamic map, [String? outFolder]) {
     if (map == false) return DartConfig._internal();
 
     return DartConfig._internal(
       out: OutputConfig.fromOptions(
-        map?['out'] as String? ?? 'lib',
+        map?['out'] as String? ?? join('lib', outFolder),
         extension: 'dart',
       ),
-      testOut: _getTestOut(map?['test_out']),
+      testOut: _getTestOut(map?['test_out'], outFolder),
       packageName: map?['package_name'] as String?,
       options: map?['options'] as Map<String, dynamic>?,
     );
@@ -60,14 +60,14 @@ class DartConfig {
   }
 
   /// Returns the output configuration for the test file.
-  static OutputConfig? _getTestOut(dynamic test) {
+  static OutputConfig? _getTestOut(dynamic test, [String? outFolder]) {
     // If false or null and test directory does not exist, return null.
     if (test == false || (test == null && !Directory('test').existsSync())) {
       return null;
     }
 
     return OutputConfig.fromOptions(
-      test as String? ?? 'test',
+      test as String? ?? join('test', outFolder),
       extension: 'dart',
       append: '_test',
     );
