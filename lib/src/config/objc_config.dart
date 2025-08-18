@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:path/path.dart' as path;
+
 import 'output_config.dart';
 
 /// Configuration for Objective-C code generation.
@@ -17,20 +19,22 @@ final class ObjcConfig {
   /// If the map is `false`, or `null` and the "macos" directory does not
   /// exist, it returns a [ObjcConfig] with null values. Otherwise, it
   /// returns a [ObjcConfig] with default values.
-  factory ObjcConfig.fromMap(dynamic map) {
+  factory ObjcConfig.fromMap(dynamic map, [String? outFolder]) {
     if (map == false || (map == null && !Directory('macos').existsSync())) {
       return ObjcConfig._internal();
     }
 
     map = map is Map ? map : <String, dynamic>{};
 
+    final defaultPath = path.join('macos/Runner', outFolder?.capitalize());
+
     return ObjcConfig._internal(
       headerOut: OutputConfig.fromOptions(
-        map['header_out'] as String? ?? 'macos',
+        map['header_out'] as String? ?? defaultPath,
         extension: 'h',
       ),
       sourceOut: OutputConfig.fromOptions(
-        map['source_out'] as String? ?? 'macos',
+        map['source_out'] as String? ?? defaultPath,
         extension: 'm',
       ),
     );
