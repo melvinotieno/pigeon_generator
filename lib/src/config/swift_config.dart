@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:path/path.dart' as path;
 import 'package:pigeon/pigeon.dart';
 
 import 'output_config.dart';
@@ -20,16 +21,18 @@ class SwiftConfig {
   /// If the map is `false`, or `null` and the "ios" directory does not exist,
   /// it returns a [SwiftConfig] with null values. Otherwise, it returns a
   /// [SwiftConfig] with default values.
-  factory SwiftConfig.fromMap(dynamic map) {
+  factory SwiftConfig.fromMap(dynamic map, [String? outFolder]) {
     if (map == false || (map == null && !Directory('ios').existsSync())) {
       return SwiftConfig._internal();
     }
 
     map = map is Map ? map : <String, dynamic>{};
 
+    final defaultPath = path.join('ios/Runner', outFolder);
+
     return SwiftConfig._internal(
       out: OutputConfig.fromOptions(
-        map['out'] as String? ?? 'ios',
+        map['out'] as String? ?? defaultPath,
         extension: 'swift',
         pascalCase: true,
       ),
