@@ -39,7 +39,7 @@ void main() {
         final swiftConfig = SwiftConfig.fromMap(true);
         final out = swiftConfig.out!;
 
-        expect(out.path, 'ios');
+        expect(out.path, 'ios/Runner');
         expect(out.extension, 'swift');
         expect(out.pascalCase, isTrue);
         expect(out.append, isNull);
@@ -51,7 +51,7 @@ void main() {
         final swiftConfig = SwiftConfig.fromMap(null);
         final out = swiftConfig.out!;
 
-        expect(out.path, 'ios');
+        expect(out.path, 'ios/Runner');
         expect(out.extension, 'swift');
         expect(out.pascalCase, isTrue);
         expect(out.append, isNull);
@@ -61,7 +61,7 @@ void main() {
         final swiftConfig = SwiftConfig.fromMap({});
         final out = swiftConfig.out!;
 
-        expect(out.path, 'ios');
+        expect(out.path, 'ios/Runner');
         expect(out.extension, 'swift');
         expect(out.pascalCase, isTrue);
         expect(out.append, isNull);
