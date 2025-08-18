@@ -36,12 +36,17 @@ class Android {
     _instance = null;
   }
 
-  /// Get the outPath and packageName, from given language, path and package.
+  /// Get the outPath and packageName.
   ///
   /// If the path is null or empty, it constructs a default path based on the
   /// srcRoot and package. If the package is null or empty, it uses the
   /// applicationId if available.
-  Map<String, String?> get(String language, String? path, String? package) {
+  Map<String, String?> get(
+    String language,
+    String? path,
+    String? folder,
+    String? package,
+  ) {
     String? outPath;
     String? packageName;
 
@@ -49,7 +54,11 @@ class Android {
     if (package != null && package.isNotEmpty) {
       packageName = package;
     } else if (_applicationId != null && _applicationId!.isNotEmpty) {
-      packageName = _applicationId;
+      if (folder != null && folder.isNotEmpty) {
+        packageName = '$_applicationId.$folder';
+      } else {
+        packageName = _applicationId;
+      }
     }
 
     // Determine the output path
