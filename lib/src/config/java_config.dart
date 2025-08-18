@@ -20,13 +20,19 @@ class JavaConfig {
   ///
   /// When the map is null (no configuration passed), we do not check for the
   /// existence of the android folder because kotlin is the default language.
-  factory JavaConfig.fromMap(dynamic map) {
+  factory JavaConfig.fromMap(dynamic map, [String? outFolder]) {
     if (map == null || map == false) return JavaConfig._internal();
 
     map = map is Map ? map : <String, dynamic>{};
 
     final options = map['options'] as Map<String, dynamic>? ?? {};
-    final android = Android().get('java', map['out'], options['package']);
+
+    final android = Android().get(
+      'java',
+      map['out'],
+      outFolder,
+      options['package'],
+    );
 
     return JavaConfig._internal(
       out: OutputConfig.fromOptions(
