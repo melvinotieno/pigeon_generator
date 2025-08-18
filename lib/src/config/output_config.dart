@@ -9,16 +9,16 @@ class OutputConfig {
     this.append,
   }) : path = normalize(path.trim());
 
-  // The path to the output directory.
+  /// The path to the output directory.
   final String path;
 
-  // The extension of the generated file.
+  /// The extension of the generated file.
   final String extension;
 
-  // Whether to use PascalCase for the generated file name.
+  /// Whether to use PascalCase for the generated file name.
   final bool pascalCase;
 
-  // The string to append to the name of the generated file.
+  /// The string to append to the name of the generated file.
   final String? append;
 
   /// Returns [OutputConfig] from the given options, or null if path is null.
@@ -28,7 +28,8 @@ class OutputConfig {
     bool pascalCase = false,
     String? append,
   }) {
-    if (path == null) return null; // Return null if path is null.
+    // Return null if path is null.
+    if (path == null) return null;
 
     return OutputConfig._internal(
       path,
@@ -45,12 +46,21 @@ extension StringExtension on String {
     // Remove leading and trailing underscores and hyphens.
     final trimmed = replaceAll(RegExp(r'^[_-]+|[_-]+$'), '');
 
+    // Matches underscores and hyphens used for conversion.
     final regex = RegExp(r'([_-][a-z])|(^[a-z])');
 
     // Apply transformation, removing underscores and hyphens.
     return trimmed.replaceAllMapped(regex, (Match match) {
       return match[0]!.replaceAll(RegExp(r'[_-]'), '').toUpperCase();
     });
+  }
+
+  /// Capitalizes the first letter of the string.
+  String capitalize() {
+    // For an empty string, return as is.
+    if (isEmpty) return this;
+
+    return '${this[0].toUpperCase()}${substring(1)}';
   }
 
   /// Applies a transformation function to the string.

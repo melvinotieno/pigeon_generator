@@ -17,7 +17,6 @@ void main() {
         append: '_generated',
       );
 
-      expect(config, isNotNull);
       expect(config?.path, 'path/to/output');
       expect(config?.extension, 'dart');
       expect(config?.pascalCase, isTrue);
@@ -30,7 +29,6 @@ void main() {
         extension: 'dart',
       );
 
-      expect(config, isNotNull);
       expect(config?.path, 'path/to/output');
       expect(config?.extension, 'dart');
       expect(config?.pascalCase, isFalse); // Default value
@@ -83,11 +81,23 @@ void main() {
       });
     });
 
+    group('capitalize', () {
+      test('should capitalize the first letter of the string', () {
+        expect('hello'.capitalize(), equals('Hello'));
+        expect('world'.capitalize(), equals('World'));
+      });
+
+      test('should handle empty string', () {
+        expect(''.capitalize(), equals(''));
+      });
+    });
+
     group('let', () {
       test('should apply basic transformations', () {
         expect('hello'.let((s) => s.toUpperCase()), equals('HELLO'));
         expect('test'.let((s) => '$s!'), equals('test!'));
         expect('hello_world'.let((s) => s.pascalCase), equals('HelloWorld'));
+        expect('hello'.let((s) => s.capitalize()), equals('Hello'));
       });
 
       test('should handle chaining', () {
