@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:path/path.dart' as path;
+
 import 'output_config.dart';
 
 /// Configuration for C++ code generation.
@@ -17,20 +19,22 @@ class CppConfig {
   /// If the map is `false`, or `null` and the "windows" directory does not
   /// exist, it returns a [CppConfig] with null values. Otherwise, it returns
   /// a [CppConfig] with default values.
-  factory CppConfig.fromMap(dynamic map) {
+  factory CppConfig.fromMap(dynamic map, [String? outFolder]) {
     if (map == false || (map == null && !Directory('windows').existsSync())) {
       return CppConfig._internal();
     }
 
     map = map is Map ? map : <String, dynamic>{};
 
+    final defaultPath = path.join('windows/runner', outFolder);
+
     return CppConfig._internal(
       headerOut: OutputConfig.fromOptions(
-        map['header_out'] as String? ?? 'windows/runner',
+        map['header_out'] as String? ?? defaultPath,
         extension: 'h',
       ),
       sourceOut: OutputConfig.fromOptions(
-        map['source_out'] as String? ?? 'windows/runner',
+        map['source_out'] as String? ?? defaultPath,
         extension: 'cpp',
       ),
     );
