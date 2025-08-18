@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:path/path.dart' as path;
+
 import 'output_config.dart';
 
 /// Configuration for the GObject code generation.
@@ -17,20 +19,22 @@ class GObjectConfig {
   /// If the map is `false`, or `null` and the "linux" directory does not
   /// exist, it returns a [GObjectConfig] with null values. Otherwise, it
   /// returns a [GObjectConfig] with default values.
-  factory GObjectConfig.fromMap(dynamic map) {
+  factory GObjectConfig.fromMap(dynamic map, [String? outFolder]) {
     if (map == false || (map == null && !Directory('linux').existsSync())) {
       return GObjectConfig._internal();
     }
 
     map = map is Map ? map : <String, dynamic>{};
 
+    final defaultPath = path.join('linux', outFolder);
+
     return GObjectConfig._internal(
       headerOut: OutputConfig.fromOptions(
-        map['header_out'] as String? ?? 'linux',
+        map['header_out'] as String? ?? defaultPath,
         extension: 'h',
       ),
       sourceOut: OutputConfig.fromOptions(
-        map['source_out'] as String? ?? 'linux',
+        map['source_out'] as String? ?? defaultPath,
         extension: 'cc',
       ),
     );
