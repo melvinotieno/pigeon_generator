@@ -56,13 +56,13 @@ void main() {
         await File('android/build.gradle').writeAsString(appIdGradle);
 
         final android1 = Android();
-        final result1 = android1.get('java', null, null);
+        final result1 = android1.get('java', null, null, null);
 
         // Change gradle file content
         await File('android/build.gradle').writeAsString(namespaceGradle);
 
         final android2 = Android();
-        final result2 = android2.get('java', null, null);
+        final result2 = android2.get('java', null, null, null);
 
         // Second instance should behave as first instance (not re-initialized)
         expect(result1['packageName'], equals(result2['packageName']));
@@ -75,7 +75,7 @@ void main() {
         await Directory('android/src').create(recursive: true);
 
         final android = Android();
-        final result = android.get('java', null, 'com.example.test');
+        final result = android.get('java', null, null, 'com.example.test');
         final expectedPath = 'android/src/main/java/com/example/test';
 
         expect(result['outPath'], equals(expectedPath));
@@ -86,7 +86,7 @@ void main() {
         await Directory('android/app/src').create(recursive: true);
 
         final android = Android();
-        final result = android.get('kotlin', null, 'com.example.app');
+        final result = android.get('kotlin', null, null, 'com.example.app');
         final expectedPath = 'android/app/src/main/kotlin/com/example/app';
 
         expect(result['outPath'], equals(expectedPath));
@@ -98,7 +98,7 @@ void main() {
         await Directory('android/app/src').create(recursive: true);
 
         final android = Android();
-        final result = android.get('java', null, 'com.example.test');
+        final result = android.get('java', null, null, 'com.example.test');
         final expectedPath = 'android/app/src/main/java/com/example/test';
 
         expect(result['outPath'], equals(expectedPath));
@@ -106,7 +106,7 @@ void main() {
 
       test('should return null values for non-existent package', () async {
         final android = Android();
-        final result = android.get('java', null, null);
+        final result = android.get('java', null, null, null);
 
         expect(result['outPath'], isNull);
         expect(result['packageName'], isNull);
@@ -119,7 +119,7 @@ void main() {
         await File('android/build.gradle').writeAsString(appIdGradle);
 
         final android = Android();
-        final result = android.get('java', null, null);
+        final result = android.get('java', null, null, null);
 
         expect(result['packageName'], isNotNull);
         expect(result['outPath'], isNotNull);
@@ -130,7 +130,7 @@ void main() {
         await File('android/build.gradle.kts').writeAsString(appIdGradle);
 
         final android = Android();
-        final result = android.get('kotlin', null, null);
+        final result = android.get('kotlin', null, null, null);
 
         expect(result['packageName'], isNotNull);
         expect(result['outPath'], isNotNull);
@@ -141,7 +141,7 @@ void main() {
         await File('android/build.gradle').writeAsString(namespaceGradle);
 
         final android = Android();
-        final result = android.get('java', null, null);
+        final result = android.get('java', null, null, null);
 
         expect(result['packageName'], isNotNull);
         expect(result['outPath'], isNotNull);
@@ -152,7 +152,7 @@ void main() {
         await File('android/build.gradle.kts').writeAsString(namespaceGradle);
 
         final android = Android();
-        final result = android.get('kotlin', null, null);
+        final result = android.get('kotlin', null, null, null);
 
         expect(result['packageName'], isNotNull);
         expect(result['outPath'], isNotNull);
@@ -163,7 +163,7 @@ void main() {
         await File('android/build.gradle').writeAsString(invalidGradle);
 
         final android = Android();
-        final result = android.get('java', null, null);
+        final result = android.get('java', null, null, null);
 
         expect(result['packageName'], isNull);
         expect(result['outPath'], isNull);
@@ -175,7 +175,13 @@ void main() {
         await Directory('android/src').create(recursive: true);
 
         final android = Android();
-        final result = android.get('java', 'custom/path', 'com.custom.package');
+
+        final result = android.get(
+          'java',
+          'custom/path',
+          null,
+          'com.custom.package',
+        );
 
         expect(result['outPath'], equals('custom/path'));
         expect(result['packageName'], equals('com.custom.package'));
@@ -186,7 +192,7 @@ void main() {
         await File('android/app/build.gradle').writeAsString(appIdGradle);
 
         final android = Android();
-        final result = android.get('java', '', '');
+        final result = android.get('java', '', null, '');
         final expectedPath = 'android/app/src/main/java/com/example/myapp';
 
         expect(result['outPath'], expectedPath);
@@ -198,7 +204,7 @@ void main() {
         await File('android/app/build.gradle').writeAsString(appIdGradle);
 
         final android = Android();
-        final result = android.get('kotlin', null, null);
+        final result = android.get('kotlin', null, null, null);
         final expectedPath = 'android/app/src/main/kotlin/com/example/myapp';
 
         expect(result['outPath'], expectedPath);
