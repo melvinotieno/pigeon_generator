@@ -21,7 +21,7 @@ class KotlinConfig {
   /// If the map is `false`, or `null` and the "android" directory does not exist,
   /// it returns a [KotlinConfig] with null values. Otherwise, it returns a
   /// [KotlinConfig] with default values.
-  factory KotlinConfig.fromMap(dynamic map) {
+  factory KotlinConfig.fromMap(dynamic map, [String? outFolder]) {
     if (map == false || (map == null && !Directory('android').existsSync())) {
       return KotlinConfig._internal();
     }
@@ -29,7 +29,13 @@ class KotlinConfig {
     map = map is Map ? map : <String, dynamic>{};
 
     final options = map['options'] as Map<String, dynamic>? ?? {};
-    final android = Android().get('kotlin', map['out'], options['package']);
+
+    final android = Android().get(
+      'kotlin',
+      map['out'],
+      outFolder,
+      options['package'],
+    );
 
     return KotlinConfig._internal(
       out: OutputConfig.fromOptions(
