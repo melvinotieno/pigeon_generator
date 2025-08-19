@@ -83,7 +83,7 @@ class PigeonConfig {
   factory PigeonConfig.fromMap(Map<String, dynamic> map) {
     final inputs = map['inputs'] as String? ?? 'pigeons';
 
-    String? copyrightHeader = map['copyrightHeader'] as String?;
+    String? copyrightHeader = map['copyright_header'] as String?;
     if (copyrightHeader == null) {
       // If copyright.txt file exists in inputs, set as copyright header.
       final copyrightPath = path.join(inputs, 'copyright.txt');
