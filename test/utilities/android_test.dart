@@ -3,21 +3,15 @@ import 'dart:io';
 import 'package:pigeon_generator/src/utilities/android.dart';
 import 'package:test/test.dart';
 
-const appIdGradle = '''
+const _appIdGradle = '''
 android {
   applicationId "com.example.myapp"
 }
 ''';
 
-const namespaceGradle = '''
+const _namespaceGradle = '''
 android {
   namespace "com.example.namespace"
-}
-''';
-
-const invalidGradle = '''
-android {
-  compileSdkVersion 31
 }
 ''';
 
@@ -25,6 +19,10 @@ void main() {
   group('Android', () {
     late Directory tempDir;
     late String originalDir;
+
+    // We do not use the setupAll and tearDownAll variants here because the
+    // Android class returns a singleton instance therefore it will maintain
+    // the initially created class across tests unless we reset it.
 
     setUp(() async {
       originalDir = Directory.current.path;
@@ -39,176 +37,138 @@ void main() {
         await tempDir.delete(recursive: true);
       }
 
-      // Reset singleton instance
       Android.reset();
     });
 
-    group('singleton', () {
+    group('regex', () {
+      test('should match applicationId or namespace', () {
+        final regexp = RegExp(regex);
+        final package = 'com.example.myapp';
+
+        // applicationId
+        String singleQuotes = "applicationId '$package'";
+        String doubleQuotes = 'applicationId "$package"';
+        String equalSignSingle = "applicationId='$package'";
+        String equalSignDouble = 'applicationId="$package"';
+        String equalSignSpaces = 'applicationId   =   "$package"';
+
+        expect(regexp.firstMatch(singleQuotes)?.group(2), equals(package));
+        expect(regexp.firstMatch(doubleQuotes)?.group(2), equals(package));
+        expect(regexp.firstMatch(equalSignSingle)?.group(2), equals(package));
+        expect(regexp.firstMatch(equalSignDouble)?.group(2), equals(package));
+        expect(regexp.firstMatch(equalSignSpaces)?.group(2), equals(package));
+
+        // namespace
+        singleQuotes = "namespace '$package'";
+        doubleQuotes = 'namespace "$package"';
+        equalSignSingle = "namespace='$package'";
+        equalSignDouble = 'namespace="$package"';
+        equalSignSpaces = 'namespace   =   "$package"';
+
+        expect(regexp.firstMatch(singleQuotes)?.group(2), equals(package));
+        expect(regexp.firstMatch(doubleQuotes)?.group(2), equals(package));
+        expect(regexp.firstMatch(equalSignSingle)?.group(2), equals(package));
+        expect(regexp.firstMatch(equalSignDouble)?.group(2), equals(package));
+        expect(regexp.firstMatch(equalSignSpaces)?.group(2), equals(package));
+      });
+    });
+
+    group('constructor', () {
       test('should return same instance for multiple calls', () {
-        final instance1 = Android();
-        final instance2 = Android();
+        final instance1 = Android('my_folder');
+        final instance2 = Android('my_project');
 
         expect(identical(instance1, instance2), isTrue);
       });
+    });
 
-      test('should initialize only once', () async {
+    group('determineSrcRoot', () {
+      test('should return null if project structure is not detected', () {
+        final android = Android('my_project');
+
+        expect(android.determineSrcRoot(), isNull);
+      });
+
+      test('should return android/app for Android application', () async {
+        await Directory('android/app/src').create(recursive: true);
+
+        final android = Android('my_project');
+
+        expect(android.determineSrcRoot(), equals('android/app'));
+      });
+
+      test('should return android for Android library', () async {
         await Directory('android/src').create(recursive: true);
-        await File('android/build.gradle').writeAsString(appIdGradle);
 
-        final android1 = Android();
-        final result1 = android1.get('java', null, null, null);
+        final android = Android('my_project');
 
-        // Change gradle file content
-        await File('android/build.gradle').writeAsString(namespaceGradle);
+        expect(android.determineSrcRoot(), equals('android'));
+      });
 
-        final android2 = Android();
-        final result2 = android2.get('java', null, null, null);
+      test('should prefer Android application over library', () async {
+        await Directory('android/app/src').create(recursive: true);
+        await Directory('android/src').create(recursive: true);
 
-        // Second instance should behave as first instance (not re-initialized)
-        expect(result1['packageName'], equals(result2['packageName']));
-        expect(result1['outPath'], equals(result2['outPath']));
+        final android = Android('my_project');
+
+        expect(android.determineSrcRoot(), equals('android/app'));
       });
     });
 
-    group('project', () {
-      test('should handle library project structure (android/src)', () async {
-        await Directory('android/src').create(recursive: true);
+    group('getApplicationId', () {
+      test('should return null if no gradle file is found', () {
+        final android = Android('my_project');
 
-        final android = Android();
-        final result = android.get('java', null, null, 'com.example.test');
-        final expectedPath = 'android/src/main/java/com/example/test';
-
-        expect(result['outPath'], equals(expectedPath));
-        expect(result['packageName'], equals('com.example.test'));
+        expect(android.getApplicationId(), isNull);
       });
 
-      test('should handle app project structure (android/app/src)', () async {
+      test('should return null for invalid gradle file', () async {
+        await Directory('android/app').create(recursive: true);
+        await File('android/app/build.gradle').writeAsString('invalid content');
+
+        final android = Android('my_project');
+
+        expect(android.getApplicationId(), isNull);
+      });
+
+      test('should extract package name from build.gradle', () async {
         await Directory('android/app/src').create(recursive: true);
+        await File('android/app/build.gradle').writeAsString(_appIdGradle);
 
-        final android = Android();
-        final result = android.get('kotlin', null, null, 'com.example.app');
-        final expectedPath = 'android/app/src/main/kotlin/com/example/app';
+        final android = Android('my_project');
 
-        expect(result['outPath'], equals(expectedPath));
-        expect(result['packageName'], equals('com.example.app'));
+        expect(android.getApplicationId(), equals('com.example.myapp'));
       });
 
-      test('should prefer application over library structure', () async {
+      test('should extract package name from build.gradle.kts', () async {
         await Directory('android/src').create(recursive: true);
-        await Directory('android/app/src').create(recursive: true);
+        await File('android/build.gradle.kts').writeAsString(_namespaceGradle);
 
-        final android = Android();
-        final result = android.get('java', null, null, 'com.example.test');
-        final expectedPath = 'android/app/src/main/java/com/example/test';
+        final android = Android('my_project');
 
-        expect(result['outPath'], equals(expectedPath));
-      });
-
-      test('should return null values for non-existent package', () async {
-        final android = Android();
-        final result = android.get('java', null, null, null);
-
-        expect(result['outPath'], isNull);
-        expect(result['packageName'], isNull);
-      });
-    });
-
-    group('applicationId', () {
-      test('should extract applicationId from build.gradle', () async {
-        await Directory('android/src').create(recursive: true);
-        await File('android/build.gradle').writeAsString(appIdGradle);
-
-        final android = Android();
-        final result = android.get('java', null, null, null);
-
-        expect(result['packageName'], isNotNull);
-        expect(result['outPath'], isNotNull);
-      });
-
-      test('should extract applicationId from build.gradle.kts', () async {
-        await Directory('android/src').create(recursive: true);
-        await File('android/build.gradle.kts').writeAsString(appIdGradle);
-
-        final android = Android();
-        final result = android.get('kotlin', null, null, null);
-
-        expect(result['packageName'], isNotNull);
-        expect(result['outPath'], isNotNull);
-      });
-
-      test('should extract namespace from build.gradle', () async {
-        await Directory('android/src').create(recursive: true);
-        await File('android/build.gradle').writeAsString(namespaceGradle);
-
-        final android = Android();
-        final result = android.get('java', null, null, null);
-
-        expect(result['packageName'], isNotNull);
-        expect(result['outPath'], isNotNull);
-      });
-
-      test('should extract namespace from build.gradle.kts', () async {
-        await Directory('android/src').create(recursive: true);
-        await File('android/build.gradle.kts').writeAsString(namespaceGradle);
-
-        final android = Android();
-        final result = android.get('kotlin', null, null, null);
-
-        expect(result['packageName'], isNotNull);
-        expect(result['outPath'], isNotNull);
-      });
-
-      test('should return null for invalid gradle', () async {
-        await Directory('android/src').create(recursive: true);
-        await File('android/build.gradle').writeAsString(invalidGradle);
-
-        final android = Android();
-        final result = android.get('java', null, null, null);
-
-        expect(result['packageName'], isNull);
-        expect(result['outPath'], isNull);
+        expect(android.getApplicationId(), equals('com.example.namespace'));
       });
     });
 
     group('get', () {
-      test('should return provided values', () async {
-        await Directory('android/src').create(recursive: true);
+      test('should return provided', () async {
+        final android = Android('my_project');
+        final config = android.get('java', 'custom/path', 'com.custom.package');
 
-        final android = Android();
-
-        final result = android.get(
-          'java',
-          'custom/path',
-          null,
-          'com.custom.package',
-        );
-
-        expect(result['outPath'], equals('custom/path'));
-        expect(result['packageName'], equals('com.custom.package'));
+        expect(config['outPath'], equals('custom/path'));
+        expect(config['packageName'], equals('com.custom.package'));
       });
 
-      test('should construct values when provided are empty', () async {
+      test('should return resolved values', () async {
         await Directory('android/app/src').create(recursive: true);
-        await File('android/app/build.gradle').writeAsString(appIdGradle);
+        await File('android/app/build.gradle').writeAsString(_appIdGradle);
 
-        final android = Android();
-        final result = android.get('java', '', null, '');
-        final expectedPath = 'android/app/src/main/java/com/example/myapp';
+        final android = Android('folder');
+        final config = android.get('java', '', '');
+        final expected = 'android/app/src/main/java/com/example/myapp/folder';
 
-        expect(result['outPath'], expectedPath);
-        expect(result['packageName'], 'com.example.myapp');
-      });
-
-      test('should construct path when no values are provided', () async {
-        await Directory('android/app/src').create(recursive: true);
-        await File('android/app/build.gradle').writeAsString(appIdGradle);
-
-        final android = Android();
-        final result = android.get('kotlin', null, null, null);
-        final expectedPath = 'android/app/src/main/kotlin/com/example/myapp';
-
-        expect(result['outPath'], expectedPath);
-        expect(result['packageName'], 'com.example.myapp');
+        expect(config['outPath'], equals(expected));
+        expect(config['packageName'], equals('com.example.myapp.folder'));
       });
     });
   });
