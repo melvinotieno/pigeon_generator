@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:pigeon_generator/src/config/dart_config.dart';
+import 'package:pigeon_generator/src/config/output_config.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -23,7 +24,7 @@ void main() {
     });
 
     group('fromMap', () {
-      test('should return empty config when map is false', () {
+      test('should return null values when map is false', () {
         final config = DartConfig.fromMap(false);
 
         expect(config.out, isNull);
@@ -32,81 +33,69 @@ void main() {
         expect(config.getOptions('test_file'), isNull);
       });
 
-      test('should return default config when map is null', () {
-        final config = DartConfig.fromMap(null);
-        final out = config.out!;
-
-        expect(out.path, 'lib');
-        expect(out.extension, 'dart');
-        expect(out.pascalCase, isFalse);
-        expect(out.append, isNull);
-        expect(config.testOut, isNull); // No test directory exists
-        expect(config.packageName, isNull);
-        expect(config.getOptions('test_file'), isNull);
-      });
-
-      test('should create config with default values for missing fields', () {
-        final config = DartConfig.fromMap({});
-        final out = config.out!;
-
-        expect(out.path, 'lib');
-        expect(out.extension, 'dart');
-        expect(out.pascalCase, isFalse);
-        expect(out.append, isNull);
-        expect(config.testOut, isNull); // No test directory exists
-        expect(config.packageName, isNull);
-        expect(config.getOptions('test_file'), isNull);
-      });
-
-      test('should create config with provided values', () {
+      test('should return config with provided values', () {
         final map = {
           'out': 'custom/lib',
           'test_out': 'custom/test',
           'package_name': 'dart_package',
         };
 
-        final config = DartConfig.fromMap(map);
-        final out = config.out!;
-        final testOut = config.testOut!;
+        // Tests without base folder path
+        DartConfig config = DartConfig.fromMap(map);
 
-        expect(out.path, 'custom/lib');
-        expect(out.extension, 'dart');
-        expect(out.pascalCase, isFalse);
-        expect(out.append, isNull);
-        expect(testOut.path, 'custom/test');
-        expect(testOut.extension, 'dart');
-        expect(testOut.pascalCase, isFalse);
-        expect(testOut.append, '_test');
+        expect(config.out?.path, equals('custom/lib'));
+        expect(config.out?.extension, equals('dart'));
+        expect(config.out?.pascalCase, isFalse);
+        expect(config.out?.append, isNull);
+        expect(config.testOut?.path, equals('custom/test'));
+        expect(config.testOut?.extension, equals('dart'));
+        expect(config.testOut?.pascalCase, isFalse);
+        expect(config.testOut?.append, equals('_test'));
         expect(config.packageName, equals('dart_package'));
+        expect(config.getOptions('test_file'), isNull);
+
+        // Tests with base folder path
+        config = DartConfig.fromMap(map, 'my_project');
+
+        expect(config.out?.path, equals('custom/lib'));
+        expect(config.out?.extension, equals('dart'));
+        expect(config.out?.pascalCase, isFalse);
+        expect(config.out?.append, isNull);
+        expect(config.testOut?.path, equals('custom/test'));
+        expect(config.testOut?.extension, equals('dart'));
+        expect(config.testOut?.pascalCase, isFalse);
+        expect(config.testOut?.append, equals('_test'));
+        expect(config.packageName, equals('dart_package'));
+        expect(config.getOptions('test_file'), isNull);
       });
 
-      test('should handle test_out as false', () {
-        final config = DartConfig.fromMap({'test_out': false});
+      test('should return default values when map is of any other type', () {
+        // Tests for null value
+        DartConfig config = DartConfig.fromMap(null);
 
-        expect(config.testOut, isNull);
-      });
+        expect(config.out?.path, equals('lib'));
+        expect(config.out?.extension, equals('dart'));
+        expect(config.out?.pascalCase, isFalse);
+        expect(config.out?.append, isNull);
+        expect(config.testOut, isNull); // No test directory exists
+        expect(config.packageName, isNull);
+        expect(config.getOptions('test_file'), isNull);
 
-      test('should handle test_out when test directory exists', () async {
-        await Directory('test').create();
+        // Tests for true value
+        config = DartConfig.fromMap(true, 'my_project');
 
-        final config = DartConfig.fromMap({'test_out': 'custom_test'});
-        final testOut = config.testOut!;
-
-        expect(testOut.path, 'custom_test');
-        expect(testOut.extension, 'dart');
-        expect(testOut.pascalCase, isFalse);
-        expect(testOut.append, '_test');
+        expect(config.out?.path, equals('lib/my_project'));
+        expect(config.out?.extension, equals('dart'));
+        expect(config.out?.pascalCase, isFalse);
+        expect(config.out?.append, isNull);
+        expect(config.testOut, isNull); // No test directory exists
+        expect(config.packageName, isNull);
+        expect(config.getOptions('test_file'), isNull);
       });
     });
 
     group('getOptions', () {
-      test('should return null when no options provided', () {
-        final config = DartConfig.fromMap({'out': 'lib'});
-
-        expect(config.getOptions('file'), isNull);
-      });
-
-      test('should return DartOptions with paths when options provided', () {
+      test('should return options with provided values', () {
         final map = {
           'options': {
             'source_out': 'src/generated',
@@ -116,23 +105,40 @@ void main() {
         };
 
         final config = DartConfig.fromMap(map);
-        final options = config.getOptions('file')!;
+        final options = config.getOptions('file');
 
-        expect(options.sourceOutPath, equals('src/generated/file.dart'));
-        expect(options.testOutPath, equals('test/generated/file_test.dart'));
-        expect(options.copyrightHeader, contains('Copyright 2024'));
+        expect(options?.sourceOutPath, equals('src/generated/file.dart'));
+        expect(options?.testOutPath, equals('test/generated/file_test.dart'));
+        expect(options?.copyrightHeader, contains('Copyright 2024'));
+      });
+    });
+
+    group('getTestOut', () {
+      test('should return null when test is disabled', () {
+        final config1 = DartConfig.getTestOut(null); // No test directory exists
+        final config2 = DartConfig.getTestOut(false);
+
+        expect(config1, isNull);
+        expect(config2, isNull);
       });
 
-      test('should handle partial options', () {
-        final map = {
-          'options': {'source_out': 'src/generated'},
-        };
+      test('should return config with provided values', () {
+        OutputConfig? config = DartConfig.getTestOut(
+          'custom/test/path',
+          'my_project',
+        );
 
-        final config = DartConfig.fromMap(map);
-        final options = config.getOptions('file')!;
+        expect(config?.path, equals('custom/test/path'));
+        expect(config?.extension, equals('dart'));
+        expect(config?.pascalCase, isFalse);
+        expect(config?.append, equals('_test'));
 
-        expect(options.sourceOutPath, equals('src/generated/file.dart'));
-        expect(options.testOutPath, isNull);
+        config = DartConfig.getTestOut(true, 'my_project');
+
+        expect(config?.path, equals('test/my_project'));
+        expect(config?.extension, equals('dart'));
+        expect(config?.pascalCase, isFalse);
+        expect(config?.append, equals('_test'));
       });
     });
   });
