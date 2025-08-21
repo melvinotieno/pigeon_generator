@@ -1,10 +1,11 @@
 import 'dart:io';
 
+import 'package:pigeon/pigeon.dart';
 import 'package:pigeon_generator/src/config/kotlin_config.dart';
 import 'package:pigeon_generator/src/utilities/android.dart';
 import 'package:test/test.dart';
 
-const appIdGradle = '''
+const _appIdGradle = '''
 android {
   applicationId "com.example.myapp"
 }
@@ -14,6 +15,10 @@ void main() {
   group('KotlinConfig', () {
     late Directory tempDir;
     late String originalDir;
+
+    // We do not use the setupAll and tearDownAll variants here because the
+    // Android class returns a singleton instance therefore it will maintain
+    // the initially created class across tests unless we reset it.
 
     setUp(() async {
       originalDir = Directory.current.path;
@@ -32,100 +37,69 @@ void main() {
     });
 
     group('fromMap', () {
-      test('should return empty config when map is false', () {
-        final kotlinConfig = KotlinConfig.fromMap(false);
+      test('should return null values when disabled', () {
+        // Tests for null value
+        KotlinConfig config = KotlinConfig.fromMap(null);
 
-        expect(kotlinConfig.out, isNull);
+        expect(config.out, isNull);
+        expect(config.getOptions('test_file'), isNull);
+
+        // Tests for false value
+        config = KotlinConfig.fromMap(false);
+
+        expect(config.out, isNull);
+        expect(config.getOptions('test_file'), isNull);
       });
 
-      test('should return empty config when map is null', () {
-        final kotlinConfig = KotlinConfig.fromMap(null);
+      test('should return config with provided values', () {
+        final config = KotlinConfig.fromMap({'out': 'custom/kotlin'});
 
-        expect(kotlinConfig.out, isNull);
+        expect(config.out?.path, equals('custom/kotlin'));
+        expect(config.out?.extension, equals('kt'));
+        expect(config.out?.pascalCase, isTrue);
+        expect(config.out?.append, isNull);
       });
 
-      test('should return empty config when map is true and no gradle', () {
-        final kotlinConfig = KotlinConfig.fromMap(true);
-
-        expect(kotlinConfig.out, isNull);
-      });
-
-      test('should return default config when map is true', () async {
+      test('should return default values for any other type', () async {
+        // Testing is done with a valid Android project. If a project does not
+        // exist, then the values for null map will be null while that of true
+        // will only have errorClassName and includeErrorClass options.
         await Directory('android/src').create(recursive: true);
-        await File('android/build.gradle').writeAsString(appIdGradle);
+        await File('android/build.gradle').writeAsString(_appIdGradle);
 
-        final kotlinConfig = KotlinConfig.fromMap(true);
-        final out = kotlinConfig.out!;
+        final expected = 'android/src/main/kotlin/com/example/myapp';
 
-        expect(out.path, 'android/src/main/kotlin/com/example/myapp');
-        expect(out.extension, 'kt');
-        expect(out.pascalCase, isTrue);
-        expect(out.append, isNull);
-      });
+        // Tests for null value
+        KotlinConfig config = KotlinConfig.fromMap(null);
+        KotlinOptions? options = config.getOptions('custom');
 
-      test('should return default config for an android project', () async {
-        await Directory('android/src').create(recursive: true);
-        await File('android/build.gradle').writeAsString(appIdGradle);
+        expect(config.out?.path, equals(expected));
+        expect(config.out?.extension, equals('kt'));
+        expect(config.out?.pascalCase, isTrue);
+        expect(config.out?.append, isNull);
+        expect(options?.package, equals('com.example.myapp'));
+        expect(options?.errorClassName, equals('CustomError'));
+        expect(options?.includeErrorClass, isTrue);
+        expect(options?.copyrightHeader, isNull);
 
-        final kotlinConfig = KotlinConfig.fromMap(null);
-        final out = kotlinConfig.out!;
+        // Tests for true value
+        config = KotlinConfig.fromMap(true);
+        options = config.getOptions('test_file');
 
-        expect(out.path, 'android/src/main/kotlin/com/example/myapp');
-        expect(out.extension, 'kt');
-        expect(out.pascalCase, isTrue);
-        expect(out.append, isNull);
-      });
-
-      test('should return default values for missing fields', () async {
-        await Directory('android/src').create(recursive: true);
-        await File('android/build.gradle').writeAsString(appIdGradle);
-
-        final kotlinConfig = KotlinConfig.fromMap(true);
-        final out = kotlinConfig.out!;
-
-        expect(out.path, 'android/src/main/kotlin/com/example/myapp');
-        expect(out.extension, 'kt');
-        expect(out.pascalCase, isTrue);
-        expect(out.append, isNull);
-      });
-
-      test('should create config with provided values', () {
-        final config = <String, dynamic>{'out': 'path/to/source'};
-
-        final kotlinConfig = KotlinConfig.fromMap(config);
-        final out = kotlinConfig.out!;
-
-        expect(out.path, 'path/to/source');
-        expect(out.extension, 'kt');
-        expect(out.pascalCase, isTrue);
-        expect(out.append, isNull);
+        expect(config.out?.path, equals(expected));
+        expect(config.out?.extension, equals('kt'));
+        expect(config.out?.pascalCase, isTrue);
+        expect(config.out?.append, isNull);
+        expect(options?.package, equals('com.example.myapp'));
+        expect(options?.errorClassName, equals('TestFileError'));
+        expect(options?.includeErrorClass, isTrue);
+        expect(options?.copyrightHeader, isNull);
       });
     });
 
     group('getOptions', () {
-      test('should return null when no options provided', () {
-        final kotlinConfig = KotlinConfig.fromMap(null);
-        final options = kotlinConfig.getOptions('custom');
-
-        expect(options, isNull);
-      });
-
-      test('should return default options', () async {
-        await Directory('android/src').create(recursive: true);
-        await File('android/build.gradle').writeAsString(appIdGradle);
-
-        final kotlinConfig = KotlinConfig.fromMap(true);
-        final options = kotlinConfig.getOptions('custom')!;
-
-        expect(options.package, 'com.example.myapp');
-        expect(options.errorClassName, 'CustomError');
-        expect(options.includeErrorClass, isTrue);
-        expect(options.copyrightHeader, isNull);
-      });
-
-      test('should return options from provided config', () {
-        final config = <String, dynamic>{
-          'out': 'path/to/source',
+      test('should return options with provided values', () {
+        final map = {
           'options': {
             'package': 'com.example.myapp',
             'include_error_class': true,
@@ -133,13 +107,13 @@ void main() {
           },
         };
 
-        final kotlinConfig = KotlinConfig.fromMap(config);
-        final options = kotlinConfig.getOptions('custom')!;
+        final config = KotlinConfig.fromMap(map);
+        final options = config.getOptions('custom');
 
-        expect(options.package, 'com.example.myapp');
-        expect(options.errorClassName, 'CustomError');
-        expect(options.includeErrorClass, isTrue);
-        expect(options.copyrightHeader, contains('Copyright 2024'));
+        expect(options?.package, 'com.example.myapp');
+        expect(options?.errorClassName, 'CustomError');
+        expect(options?.includeErrorClass, isTrue);
+        expect(options?.copyrightHeader, contains('Copyright 2024'));
       });
     });
   });
