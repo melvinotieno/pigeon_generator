@@ -21,14 +21,32 @@ class OutputConfig {
   /// The string to append to the name of the generated file.
   final String? append;
 
-  /// Returns [OutputConfig] from the given options, or null if path is null.
+  /// Returns [OutputConfig] from the given options.
+  ///
+  /// Parameters:
+  /// - [path]: The path to the output directory (nullable)
+  /// - [extension]: The file extension for the generated file
+  /// - [pascalCase]: Whether to use PascalCase for the generated file name
+  /// - [append]: Optional string to append to the name of the generated file
+  ///
+  /// Returns:
+  /// - `null` if [path] is null
+  /// - An [OutputConfig] instance with the provided values
+  ///
+  /// Example:
+  /// ```dart
+  /// final config = OutputConfig.fromOptions(
+  ///   '/output/dir',
+  ///   extension: '.dart',
+  ///   pascalCase: true,
+  ///   append: '_test',
+  /// );
   static OutputConfig? fromOptions(
     String? path, {
     required String extension,
     bool pascalCase = false,
     String? append,
   }) {
-    // Return null if path is null.
     if (path == null) return null;
 
     return OutputConfig._internal(
@@ -43,10 +61,7 @@ class OutputConfig {
 extension StringExtension on String {
   /// Converts the string to PascalCase.
   String get pascalCase {
-    // Remove leading and trailing underscores and hyphens.
     final trimmed = replaceAll(RegExp(r'^[_-]+|[_-]+$'), '');
-
-    // Matches underscores and hyphens used for conversion.
     final regex = RegExp(r'([_-][a-z])|(^[a-z])');
 
     // Apply transformation, removing underscores and hyphens.
@@ -57,13 +72,18 @@ extension StringExtension on String {
 
   /// Capitalizes the first letter of the string.
   String capitalize() {
-    // For an empty string, return as is.
-    if (isEmpty) return this;
+    if (isEmpty) return this; // For an empty string, return as is.
 
     return '${this[0].toUpperCase()}${substring(1)}';
   }
 
   /// Applies a transformation function to the string.
+  ///
+  /// Parameters:
+  /// - [transform]: A function that returns a transformed string
+  ///
+  /// Returns:
+  /// - The result of applying [transform] to this string
   String let(String Function(String) transform) {
     return transform(this);
   }
