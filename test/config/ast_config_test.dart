@@ -4,46 +4,54 @@ import 'package:test/test.dart';
 void main() {
   group('AstConfig', () {
     group('fromMap', () {
-      test('should return empty config when map is false', () {
-        final config = AstConfig.fromMap(false);
+      test('should return null values when disabled', () {
+        // Tests for null value
+        AstConfig config = AstConfig.fromMap(null);
+
+        expect(config.out, isNull);
+
+        // Tests for false value
+        config = AstConfig.fromMap(false);
 
         expect(config.out, isNull);
       });
 
-      test('should return empty config when map is null', () {
-        final config = AstConfig.fromMap(null);
+      test('should return config with provided values', () {
+        final map = {'out': 'path/to/ast'};
 
-        expect(config.out, isNull);
+        // Tests without base folder path
+        AstConfig config = AstConfig.fromMap(map);
+
+        expect(config.out?.path, equals('path/to/ast'));
+        expect(config.out?.extension, equals('ast'));
+        expect(config.out?.pascalCase, isFalse);
+        expect(config.out?.append, isNull);
+
+        // Tests with base folder path
+        config = AstConfig.fromMap(map, 'my_project');
+
+        expect(config.out?.path, equals('path/to/ast'));
+        expect(config.out?.extension, equals('ast'));
+        expect(config.out?.pascalCase, isFalse);
+        expect(config.out?.append, isNull);
       });
 
-      test('should return default config when map is true', () {
-        final config = AstConfig.fromMap(true);
-        final out = config.out!;
+      test('should return default values for any other type', () {
+        // Tests without base folder path
+        AstConfig config = AstConfig.fromMap(true);
 
-        expect(out.path, 'ast');
-        expect(out.extension, 'ast');
-        expect(out.pascalCase, isFalse);
-        expect(out.append, isNull);
-      });
+        expect(config.out?.path, equals('ast'));
+        expect(config.out?.extension, equals('ast'));
+        expect(config.out?.pascalCase, isFalse);
+        expect(config.out?.append, isNull);
 
-      test('should create config with default values for missing fields', () {
-        final config = AstConfig.fromMap({});
-        final out = config.out!;
+        // Tests with base folder path
+        config = AstConfig.fromMap(true, 'my_project');
 
-        expect(out.path, 'ast');
-        expect(out.extension, 'ast');
-        expect(out.pascalCase, isFalse);
-        expect(out.append, isNull);
-      });
-
-      test('should create config with provided values', () {
-        final config = AstConfig.fromMap({'out': 'custom/ast'});
-        final out = config.out!;
-
-        expect(out.path, 'custom/ast');
-        expect(out.extension, 'ast');
-        expect(out.pascalCase, isFalse);
-        expect(out.append, isNull);
+        expect(config.out?.path, equals('ast/my_project'));
+        expect(config.out?.extension, equals('ast'));
+        expect(config.out?.pascalCase, isFalse);
+        expect(config.out?.append, isNull);
       });
     });
   });
