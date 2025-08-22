@@ -23,85 +23,102 @@ void main() {
     });
 
     group('fromMap', () {
-      test('should return empty config when map is false', () {
-        final gobjectConfig = GObjectConfig.fromMap(false);
+      test('should return null values when disabled', () {
+        // Tests for null value
+        GObjectConfig config = GObjectConfig.fromMap(null);
 
-        expect(gobjectConfig.headerOut, isNull);
-        expect(gobjectConfig.sourceOut, isNull);
+        expect(config.headerOut, isNull);
+        expect(config.sourceOut, isNull);
+        expect(config.getOptions('test_file'), isNull);
+
+        // Tests for false value
+        config = GObjectConfig.fromMap(false);
+
+        expect(config.headerOut, isNull);
+        expect(config.sourceOut, isNull);
+        expect(config.getOptions('test_file'), isNull);
       });
 
-      test('should return empty config when map is null', () {
-        final gobjectConfig = GObjectConfig.fromMap(null);
-
-        expect(gobjectConfig.headerOut, isNull);
-        expect(gobjectConfig.sourceOut, isNull);
-      });
-
-      test('should return default config when map is true', () {
-        final gobjectConfig = GObjectConfig.fromMap(true);
-        final headerOut = gobjectConfig.headerOut!;
-        final sourceOut = gobjectConfig.sourceOut!;
-
-        expect(headerOut.path, 'linux');
-        expect(headerOut.extension, 'h');
-        expect(headerOut.pascalCase, isFalse);
-        expect(headerOut.append, isNull);
-        expect(sourceOut.path, 'linux');
-        expect(sourceOut.extension, 'cc');
-        expect(sourceOut.pascalCase, isFalse);
-        expect(sourceOut.append, isNull);
-      });
-
-      test('should return default config when linux folder exists', () async {
-        await Directory('linux').create();
-
-        final gobjectConfig = GObjectConfig.fromMap(null);
-        final headerOut = gobjectConfig.headerOut!;
-        final sourceOut = gobjectConfig.sourceOut!;
-
-        expect(headerOut.path, 'linux');
-        expect(headerOut.extension, 'h');
-        expect(headerOut.pascalCase, isFalse);
-        expect(headerOut.append, isNull);
-        expect(sourceOut.path, 'linux');
-        expect(sourceOut.extension, 'cc');
-        expect(sourceOut.pascalCase, isFalse);
-        expect(sourceOut.append, isNull);
-      });
-
-      test('should create config with default values for missing fields', () {
-        final gobjectConfig = GObjectConfig.fromMap({});
-        final headerOut = gobjectConfig.headerOut!;
-        final sourceOut = gobjectConfig.sourceOut!;
-
-        expect(headerOut.path, 'linux');
-        expect(headerOut.extension, 'h');
-        expect(headerOut.pascalCase, isFalse);
-        expect(headerOut.append, isNull);
-        expect(sourceOut.path, 'linux');
-        expect(sourceOut.extension, 'cc');
-        expect(sourceOut.pascalCase, isFalse);
-        expect(sourceOut.append, isNull);
-      });
-
-      test('should create config with provided values', () {
-        final config = <String, dynamic>{
+      test('should return config with provided values', () {
+        final map = {
           'header_out': 'path/to/header',
           'source_out': 'path/to/source',
         };
 
-        final gobjectConfig = GObjectConfig.fromMap(config);
-        final headerOut = gobjectConfig.headerOut!;
-        final sourceOut = gobjectConfig.sourceOut!;
+        // Tests without base folder path
+        GObjectConfig config = GObjectConfig.fromMap(map);
 
-        expect(headerOut.path, 'path/to/header');
-        expect(headerOut.extension, 'h');
-        expect(headerOut.pascalCase, isFalse);
-        expect(headerOut.append, isNull);
-        expect(sourceOut.path, 'path/to/source');
-        expect(sourceOut.extension, 'cc');
-        expect(sourceOut.pascalCase, isFalse);
-        expect(sourceOut.append, isNull);
+        expect(config.headerOut?.path, equals('path/to/header'));
+        expect(config.headerOut?.extension, equals('h'));
+        expect(config.headerOut?.pascalCase, isFalse);
+        expect(config.headerOut?.append, isNull);
+        expect(config.sourceOut?.path, equals('path/to/source'));
+        expect(config.sourceOut?.extension, equals('cc'));
+        expect(config.sourceOut?.pascalCase, isFalse);
+        expect(config.sourceOut?.append, isNull);
+
+        // Tests with base folder path
+        config = GObjectConfig.fromMap(map, 'my_project');
+
+        expect(config.headerOut?.path, equals('path/to/header'));
+        expect(config.headerOut?.extension, equals('h'));
+        expect(config.headerOut?.pascalCase, isFalse);
+        expect(config.headerOut?.append, isNull);
+        expect(config.sourceOut?.path, equals('path/to/source'));
+        expect(config.sourceOut?.extension, equals('cc'));
+        expect(config.sourceOut?.pascalCase, isFalse);
+        expect(config.sourceOut?.append, isNull);
+      });
+
+      test('should return default values for any other type', () async {
+        // Tests for true value
+        GObjectConfig config = GObjectConfig.fromMap(true);
+
+        expect(config.headerOut?.path, equals('linux'));
+        expect(config.headerOut?.extension, equals('h'));
+        expect(config.headerOut?.pascalCase, isFalse);
+        expect(config.headerOut?.append, isNull);
+        expect(config.sourceOut?.path, equals('linux'));
+        expect(config.sourceOut?.extension, equals('cc'));
+        expect(config.sourceOut?.pascalCase, isFalse);
+        expect(config.sourceOut?.append, isNull);
+
+        // For null to return default values, there needs to exist a linux
+        // directory in the root of the project.
+        await Directory('linux').create();
+
+        // Tests for null values
+        config = GObjectConfig.fromMap(null, 'my_project');
+
+        expect(config.headerOut?.path, equals('linux/my_project'));
+        expect(config.headerOut?.extension, equals('h'));
+        expect(config.headerOut?.pascalCase, isFalse);
+        expect(config.headerOut?.append, isNull);
+        expect(config.sourceOut?.path, equals('linux/my_project'));
+        expect(config.sourceOut?.extension, equals('cc'));
+        expect(config.sourceOut?.pascalCase, isFalse);
+        expect(config.sourceOut?.append, isNull);
+      });
+    });
+
+    group('getOptions', () {
+      test('should return options with provided values', () {
+        final map = {
+          'options': {
+            'header_include': 'header/include',
+            'module': 'my_module',
+            'copyright_header': ['Copyright Header'],
+            'header_out': 'header/out',
+          },
+        };
+
+        final config = GObjectConfig.fromMap(map);
+        final options = config.getOptions('file');
+
+        expect(options?.headerIncludePath, equals('header/include/file.h'));
+        expect(options?.module, equals('my_module'));
+        expect(options?.copyrightHeader, contains('Copyright Header'));
+        expect(options?.headerOutPath, equals('header/out/file.h'));
       });
     });
   });
