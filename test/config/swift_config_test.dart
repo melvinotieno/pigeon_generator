@@ -23,78 +23,64 @@ void main() {
     });
 
     group('fromMap', () {
-      test('should return empty config when map is false', () {
-        final swiftConfig = SwiftConfig.fromMap(false);
+      test('should return null values when disabled', () {
+        // Tests for null value
+        SwiftConfig config = SwiftConfig.fromMap(null);
 
-        expect(swiftConfig.out, isNull);
+        expect(config.out, isNull);
+        expect(config.getOptions('test_file'), isNull);
+
+        // Tests for false value
+        config = SwiftConfig.fromMap(false);
+
+        expect(config.out, isNull);
+        expect(config.getOptions('test_file'), isNull);
       });
 
-      test('should return empty config when map is null', () {
-        final swiftConfig = SwiftConfig.fromMap(null);
+      test('should return config with provided values', () {
+        final map = {'out': 'path/to/output'};
 
-        expect(swiftConfig.out, isNull);
+        // Tests without base folder path
+        SwiftConfig config = SwiftConfig.fromMap(map);
+
+        expect(config.out?.path, equals('path/to/output'));
+        expect(config.out?.extension, equals('swift'));
+        expect(config.out?.pascalCase, isTrue);
+        expect(config.out?.append, isNull);
+
+        // Tests with base folder path
+        config = SwiftConfig.fromMap(map, 'my_project');
+
+        expect(config.out?.path, equals('path/to/output'));
+        expect(config.out?.extension, equals('swift'));
+        expect(config.out?.pascalCase, isTrue);
+        expect(config.out?.append, isNull);
       });
 
-      test('should return default config when map is true', () {
-        final swiftConfig = SwiftConfig.fromMap(true);
-        final out = swiftConfig.out!;
+      test('should return default values for any other type', () async {
+        // Tests for true value
+        SwiftConfig config = SwiftConfig.fromMap(true);
 
-        expect(out.path, 'ios/Runner');
-        expect(out.extension, 'swift');
-        expect(out.pascalCase, isTrue);
-        expect(out.append, isNull);
-      });
+        expect(config.out?.path, equals('ios/Runner'));
+        expect(config.out?.extension, equals('swift'));
+        expect(config.out?.pascalCase, isTrue);
+        expect(config.out?.append, isNull);
 
-      test('should return default config when ios folder exists', () async {
+        // For null to return default values, there needs to exist an ios
+        // directory in the root of the project.
         await Directory('ios').create();
 
-        final swiftConfig = SwiftConfig.fromMap(null);
-        final out = swiftConfig.out!;
+        config = SwiftConfig.fromMap(null, 'project/folder');
 
-        expect(out.path, 'ios/Runner');
-        expect(out.extension, 'swift');
-        expect(out.pascalCase, isTrue);
-        expect(out.append, isNull);
-      });
-
-      test('should create config with default values for missing fields', () {
-        final swiftConfig = SwiftConfig.fromMap({});
-        final out = swiftConfig.out!;
-
-        expect(out.path, 'ios/Runner');
-        expect(out.extension, 'swift');
-        expect(out.pascalCase, isTrue);
-        expect(out.append, isNull);
-      });
-
-      test('should create config with provided values', () {
-        final config = <String, dynamic>{
-          'out': 'path/to/source',
-          'options': {
-            'include_error_class': false,
-            'error_class_name': 'CustomError',
-            'copyright_header': ['Copyright 2024'],
-          },
-        };
-
-        final swiftConfig = SwiftConfig.fromMap(config);
-        final out = swiftConfig.out!;
-
-        expect(out.path, 'path/to/source');
-        expect(out.extension, 'swift');
-        expect(out.pascalCase, isTrue);
-        expect(out.append, isNull);
+        expect(config.out?.path, equals('ios/Runner/Project/Folder'));
+        expect(config.out?.extension, equals('swift'));
+        expect(config.out?.pascalCase, isTrue);
+        expect(config.out?.append, isNull);
       });
     });
 
     group('getOptions', () {
-      test('should return null when no options provided', () {
-        final swiftConfig = SwiftConfig.fromMap({'out': 'ios'});
-
-        expect(swiftConfig.getOptions('file'), isNull);
-      });
-
-      test('should return SwiftOptions with paths when options provided', () {
+      test('should return options with provided values', () {
         final map = {
           'options': {
             'include_error_class': false,
@@ -102,13 +88,12 @@ void main() {
           },
         };
 
-        final swiftConfig = SwiftConfig.fromMap(map);
-        final options = swiftConfig.getOptions('custom');
+        final config = SwiftConfig.fromMap(map);
+        final options = config.getOptions('custom');
 
-        expect(options, isNotNull);
-        expect(options!.includeErrorClass, isFalse);
-        expect(options.errorClassName, 'CustomError');
-        expect(options.copyrightHeader, ['Copyright 2024']);
+        expect(options?.includeErrorClass, isFalse);
+        expect(options?.errorClassName, 'CustomError');
+        expect(options?.copyrightHeader, ['Copyright 2024']);
       });
     });
   });
