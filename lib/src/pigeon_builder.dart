@@ -8,7 +8,7 @@ import 'pigeon_config.dart';
 import 'pigeon_extensions.dart';
 import 'pigeon_scratch_space.dart';
 
-/// A [Builder] that uses Pigeon to generate code from Dart files.
+/// A [Builder] that uses Pigeon to generate code from Dart input files.
 class PigeonBuilder extends Builder {
   /// Creates a new [PigeonBuilder] with the given [PigeonConfig].
   PigeonBuilder(this.config);
@@ -50,7 +50,7 @@ class PigeonBuilder extends Builder {
     if (await buildStep.canRead(inputId)) {
       final pigeonOptions = config.getPigeonOptions(inputId.path);
 
-      final scratchSpace = await buildStep.fetchResource(_scratchSpaceResource);
+      final scratchSpace = await buildStep.fetchResource(scratchSpaceResource);
 
       // Code will be generated to the scratch space resource, therefore, the
       // PigeonOptions will be modified to reflect the scratch space paths.
@@ -88,33 +88,3 @@ class PigeonBuilder extends Builder {
     }
   }
 }
-
-final _scratchSpace = PigeonScratchSpace();
-
-/// A resource that manages a scratch space for Pigeon code generation.
-///
-/// This resource ensures that the scratch space is created before use and
-/// cleaned up after the build process is complete. It provides a temporary
-/// directory for Pigeon to generate its output files, which are then copied
-/// to their final locations.
-final _scratchSpaceResource = Resource<PigeonScratchSpace>(
-  () {
-    if (!_scratchSpace.exists) {
-      _scratchSpace.tempDir.createSync(recursive: true);
-      _scratchSpace.exists = true;
-    }
-
-    return _scratchSpace;
-  },
-  beforeExit: () async {
-    try {
-      if (_scratchSpace.exists) {
-        await _scratchSpace.delete();
-      } else {
-        await _scratchSpace.tempDir.delete(recursive: true);
-      }
-    } on FileSystemException {
-      log.warning('Failed to delete temp dir: ${_scratchSpace.tempDir.path}.');
-    }
-  },
-);
