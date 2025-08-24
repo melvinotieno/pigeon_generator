@@ -1,6 +1,11 @@
 ## 3.0.0
 
-- Minimum Pigeon version is now 25.0.0.
+- Fixes a crash when using the command `dart run build_runner watch`.
+
+### Breaking Changes
+
+- Minimum Pigeon version is now 26.0.0.
+- We now have to explicitely indicate the output folder through the `out_folder` option in the build.yaml file.
 
 ## 2.0.6
 
