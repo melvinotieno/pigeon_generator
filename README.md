@@ -1,9 +1,10 @@
 # pigeon_generator
 
-This is a dart package that integrates [build_runner](https://pub.dev/packages/build_runner) with [pigeon](https://pub.dev/packages/pigeon) code generator for platform channels. This automates the manual process of running `pigeon` hence making it easier and efficient to generate the code for platform channels.
+This is a Dart package that integrates [build_runner](https://pub.dev/packages/build_runner) with [pigeon](https://pub.dev/packages/pigeon) code generator for platform channels. This automates the manual process of running `pigeon`, making it easier and more efficient to generate code for platform channels.
 
 [![pub package](https://img.shields.io/pub/v/pigeon_generator.svg)](https://pub.dev/packages/pigeon_generator)
 [![pub points](https://img.shields.io/pub/points/pigeon_generator?color=2E8B57&label=pub%20points)](https://pub.dev/packages/pigeon_generator/score)
+[![pigeon_generator](https://github.com/melvinotieno/pigeon_generator/actions/workflows/test.yml/badge.svg)](https://github.com/melvinotieno/pigeon_generator/actions/workflows/test.yml)
 
 ## Installation
 
@@ -30,14 +31,14 @@ Follow the steps below to use `pigeon_generator` in your project:
 
 Create a folder named `pigeons` in the root of your project. This folder will contain all the pigeon files.
 
-You willl also need to include this folders in the `build.yaml` file so that the `build_runner` can pick up the pigeon files.
+You will also need to include this folder in the `build.yaml` file so that the `build_runner` can pick up the pigeon files.
 
 ```yaml
 additional_public_assets:
   - pigeons/**
 ```
 
-You may use a different folder other than `pigeons` but you will need to update the `build.yaml` file accordingly. If you are using a different folder, you will have to specify that folder in the `build.yaml` file options for the `pigeon_generator` builder. Example is as shown below:
+You may use a different folder other than `pigeons`, but you will need to update the `build.yaml` file accordingly. If you are using a different folder, you will have to specify that folder in the `build.yaml` file options for the `pigeon_generator` builder. An example is shown below:
 
 ```yaml
 targets:
@@ -53,7 +54,7 @@ additional_public_assets:
 
 ### 2. Configuring pigeon_generator
 
-By default, you do not need to do anything other than creating the pigeons folder with the pigeon files and specifying the folder in the `additional_public_assets` of the `build.yaml` file.
+By default, you do not need to do anything other than create the `pigeons` folder with the pigeon files and specify the folder in the `additional_public_assets` of the `build.yaml` file.
 
 However, a full list of the configurations you can set is shown below:
 
@@ -120,12 +121,12 @@ out_template: "name.g.extension"
 
 - `inputs`: The folder path where the pigeon files are located. Default is `pigeons`.
 - `dart`: Dart code generation configuration. Defaults will be used if not specified, and disabled if `false`.
-  - `out`: The folder path where the dart code will be generated `(.dart)`. If not defined, this defaults to `lib`.
-  - `test_out`: The folder path where the dart test code will be generated `(_test.dart)`. If the value is `true` or `test` directory exists, this defaults to `test`.
+  - `out`: The folder path where the Dart code will be generated `(.dart)`. If not defined, this defaults to `lib`.
+  - `test_out`: The folder path where the Dart test code will be generated `(_test.dart)`. If the value is `true` or `test` directory exists, this defaults to `test`.
   - `package_name`: The name of the package the pigeon files will be used in.
   - `options`:
-    - `source_out`: The folder path where the dart source files will be generated.
-    - `test_out`: The folder path where the dart test files will be generated.
+    - `source_out`: The folder path where the Dart source files will be generated.
+    - `test_out`: The folder path where the Dart test files will be generated.
     - `copyright_header`: A copyright header that will get prepended to generated code.
 - `objc`: Objective-C code generation configuration. Defaults will be used if the value is `true`.
   - `header_out`: The folder path where the Objective-C header files will be generated `(.h)`. Default is `macos/Runner`.
@@ -145,8 +146,8 @@ out_template: "name.g.extension"
   - `options`:
     - `copyright_header`: A copyright header that will get prepended to generated code.
     - `include_error_class`: Whether to include the error class in generation. This should only ever be set to false if you have another generated Swift file in the same directory.
-- `kotlin`: Kotlin code generation configuration for Android. Defaults will be used if the value is `true` or if it is not specified and android folder exists.
-  - `out`: The folder path where the Kotlin code will be generated `(.kt)`. For the default, we get the applicationId from `android/app/build.gradle` and use it to generate the path.
+- `kotlin`: Kotlin code generation configuration for Android. Defaults will be used if the value is `true` or if a valid Android project exists.
+  - `out`: The folder path where the Kotlin code will be generated `(.kt)`. For defaults, we get the applicationId from the project's Gradle file and use it to generate the path.
   - `options`:
     - `package`: The package where the generated class will live.
     - `copyright_header`: A copyright header that will get prepended to generated code.
@@ -174,7 +175,7 @@ out_template: "name.g.extension"
 - `base_path`: A base path to be prepended to all provided output paths.
 - `skip_outputs`: The platforms to skip generating outputs for. Options include: `dart`, `dart_test`, `java`, `kotlin`, `swift`, `objc`, `cpp`, `gobject`, `ast`.
 - `out_folder`: The folder that will be appended to all output paths.
-- `out_template`: The template for the generated file name. The default is `name.g.extension` where `name` is the name of the pigeon file and `extension` is the platform specific extension. Example for the pigeon file named `test.dart`, the generated file for kotlin will be `Test.g.kt`.
+- `out_template`: The template for the generated file name. The default is `name.g.extension` where `name` is the name of the pigeon file and `extension` is the platform-specific extension. Example for the pigeon file named `test.dart`, the generated file for Kotlin will be `Test.g.kt`.
 
 ### 3. Run the generator
 
@@ -184,7 +185,7 @@ To generate the code, run the following command:
 dart run build_runner build
 ```
 
-You can use the watch mode to automatically regenerate the code when the pigeon files change:
+You can use the watch mode to regenerate the code when the pigeon files change automatically:
 
 ```bash
 dart run build_runner watch
