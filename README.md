@@ -63,81 +63,117 @@ dart:
   out: "lib"
   test_out: "test"
   package_name: "pigeon_generator_example"
-cpp:
-  header_out: "windows/runner"
-  source_out: "windows/runner"
   options:
-    namespace: "pigeon_generator_example"
-gobject:
-  header_out: "linux"
-  source_out: "linux"
-  options:
-    module: "pigeon_generator_example"
-kotlin:
-  out: "android/app/src/main/kotlin/com/example/pigeon_generator_example"
-  options:
-    package: "com.example.pigeon_generator_example"
-java:
-  out: "android/app/src/main/java/com/example/pigeon_generator_example"
-  options:
-    package: "com.example.pigeon_generator_example"
-    use_generated_annotation: true
-swift:
-  out: "ios/Runner"
+    source_out: "path/to/source"
+    test_out: "path/to/test"
+    copyright_header: ["Copyright Header"]
 objc:
   header_out: "macos/Runner"
   source_out: "macos/Runner"
   options:
+    header_include: "path/to/include"
     prefix: "PGN"
+    copyright_header: ["Copyright Header"]
+java:
+  out: "android/app/src/main/java/com/example/pigeon_generator_example"
+  options:
+    package: "com.example.pigeon_generator_example"
+    copyright_header: ["Copyright Header"]
+    use_generated_annotation: true
+swift:
+  out: "ios/Runner"
+  options:
+    copyright_header: ["Copyright Header"]
+    include_error_class: true
+kotlin:
+  out: "android/app/src/main/kotlin/com/example/pigeon_generator_example"
+  options:
+    package: "com.example.pigeon_generator_example"
+    copyright_header: ["Copyright Header"]
+    include_error_class: true
+cpp:
+  header_out: "windows/runner"
+  source_out: "windows/runner"
+  options:
+    header_include: "path/to/include"
+    namespace: "pigeon_generator_example"
+    copyright_header: ["Copyright Header"]
+    header_out: "path/to/out"
+gobject:
+  header_out: "linux"
+  source_out: "linux"
+  options:
+    header_include: "path/to/include"
+    module: "pigeon_generator_example"
+    copyright_header: ["Copyright Header"]
+    header_out: "path/to/out"
 ast:
   out: "output"
 copyright_header: "pigeons/copyright.txt"
-one_language: false
 debug_generators: false
 base_path: "pigeon_generator_example"
 skip_outputs:
-  defaults: [ios] # Do not generate output for ios for pigeons/defaults.dart
+  defaults: [objc] # Do not generate output for objc for pigeons/defaults.dart
+out_folder: "pigeons"
 out_template: "name.g.extension"
 ```
 
 - `inputs`: The folder path where the pigeon files are located. Default is `pigeons`.
-- `dart`: Dart code generation configuration.
-  - `out`: The folder path where the dart code will be generated `(.dart)`. If `one_language` is not defined or is false, this defaults to `lib/pigeons` if not specified.
-  - `test_out`: The folder path where the dart test code will be generated `(_test.dart)`. If the value is `true`, this defaults to `test/pigeons`.
-  - `package_name`: The package name of the generated dart code.
-- `cpp`: C++ code generation configuration for Windows. Defaults will be used if the value is `true` or if it is not specified and windows folder exists.
-  - `header_out`: The folder path where the C++ header files will be generated `(.h)`. Default is `windows/runner/pigeons`.
-  - `source_out`: The folder path where the C++ source files will be generated `(.cpp)`. Default is `windows/runner/pigeons`.
+- `dart`: Dart code generation configuration. Defaults will be used if not specified, and disabled if `false`.
+  - `out`: The folder path where the dart code will be generated `(.dart)`. If not defined, this defaults to `lib`.
+  - `test_out`: The folder path where the dart test code will be generated `(_test.dart)`. If the value is `true` or `test` directory exists, this defaults to `test`.
+  - `package_name`: The name of the package the pigeon files will be used in.
   - `options`:
-    - `namespace`: The namespace of the generated C++ code.
-- `gobject`: GObject code generation configuration for Linux. Defaults will be used if the value is `true` or if it is not specified and linux folder exists.
-  - `header_out`: The folder path where the GObject header files will be generated `(.h)`. Default is `linux/pigeons`.
-  - `source_out`: The folder path where the GObject source files will be generated `(.cc)`. Default is `linux/pigeons`.
+    - `source_out`: The folder path where the dart source files will be generated.
+    - `test_out`: The folder path where the dart test files will be generated.
+    - `copyright_header`: A copyright header that will get prepended to generated code.
+- `objc`: Objective-C code generation configuration. Defaults will be used if the value is `true`.
+  - `header_out`: The folder path where the Objective-C header files will be generated `(.h)`. Default is `macos/Runner`.
+  - `source_out`: The folder path where the Objective-C source files will be generated `(.m)`. Default is `macos/Runner`.
   - `options`:
-    - `module`: The module name of the generated GObject code.
-- `kotlin`: Kotlin code generation configuration for Android. Defaults will be used if the value is `true` or if it is not specified and android folder exists.
-  - `out`: The folder path where the Kotlin code will be generated `(.kt)`. For the default, we get the applicationId from `android/app/build.gradle` and use it to generate the path.
-  - `options`:
-    - `package`: The package name of the generated Kotlin code.
+    - `header_include`: The folder path to the header that will get placed in the source file.
+    - `prefix`: Prefix that will be appended before all generated classes and protocols.
+    - `copyright_header`: A copyright header that will get prepended to generated code.
 - `java`: Java code generation configuration for Android. Defaults will only be used if the value is `true`.
   - `out`: The folder path where the Java code will be generated `(.java)`.
   - `options`:
-    - `package`: The package name of the generated Java code.
-    - `use_generated_annotation`: The value `true` adds the java.annotation.Generated annotation to the output.
-- `swift`: Swift code generation configuration for iOS. Defaults will be used if the value is `true` or if it is not specified and ios folder exists.
-  - `out`: The folder path where the Swift code will be generated `(.swift)`. Default is `ios/Runner/pigeons`.
-- `objc`: Objective-C code generation configuration for macOS. Defaults will be used if the value is `true` or if it is not specified and macos folder exists.
-  - `header_out`: The folder path where the Objective-C header files will be generated `(.h)`. Default is `macos/Runner/pigeons`.
-  - `source_out`: The folder path where the Objective-C source files will be generated `(.m)`. Default is `macos/Runner/pigeons`.
+    - `package`: The package where the generated class will live.
+    - `copyright_header`: A copyright header that will get prepended to generated code.
+    - `use_generated_annotation`: Determines if the javax.annotation.Generated is used in the output. This is false by default since that dependency isn't available in plugins by default.
+- `swift`: Swift code generation configuration. Defaults will be used if the value is `true` or if `ios` directory exists.
+  - `out`: The folder path where the Swift code will be generated `(.swift)`. Default is `ios/Runner`.
   - `options`:
-    - `prefix`: The prefix of the generated Objective-C code.
+    - `copyright_header`: A copyright header that will get prepended to generated code.
+    - `include_error_class`: Whether to include the error class in generation. This should only ever be set to false if you have another generated Swift file in the same directory.
+- `kotlin`: Kotlin code generation configuration for Android. Defaults will be used if the value is `true` or if it is not specified and android folder exists.
+  - `out`: The folder path where the Kotlin code will be generated `(.kt)`. For the default, we get the applicationId from `android/app/build.gradle` and use it to generate the path.
+  - `options`:
+    - `package`: The package where the generated class will live.
+    - `copyright_header`: A copyright header that will get prepended to generated code.
+    - `include_error_class`: Whether to include the error class in generation. This should only ever be set to false if you have another generated Kotlin file in the same directory.
+- `cpp`: C++ code generation configuration for Windows. Defaults will be used if the value is `true` or if `windows` directory exists.
+  - `header_out`: The folder path where the C++ header files will be generated `(.h)`. Default is `windows/runner`.
+  - `source_out`: The folder path where the C++ source files will be generated `(.cpp)`. Default is `windows/runner`.
+  - `options`:
+    - `header_include`: The folder path to the header that will get placed in the source file.
+    - `namespace`: The namespace where the generated class will live.
+    - `copyright_header`: A copyright header that will get prepended to generated code.
+    - `header_out`: The folder path to the output header file location.
+- `gobject`: GObject code generation configuration for Linux. Defaults will be used if the value is `true` or if `linux` directory exists.
+  - `header_out`: The folder path where the GObject header files will be generated `(.h)`. Default is `linux`.
+  - `source_out`: The folder path where the GObject source files will be generated `(.cc)`. Default is `linux`.
+  - `options`:
+    - `header_include`: The folder path to the header that will get placed in the source file.
+    - `module`: The module where the generated class will live.
+    - `copyright_header`: A copyright header that will get prepended to generated code.
+    - `header_out`: The folder path to the output header file location.
 - `ast`: AST code generation configuration. Defaults will only be used if the value is `true`.
-  - `out`: The folder path where the AST code will be generated `(.ast)`. Default is `output`.
+  - `out`: The folder path where the AST code will be generated `(.ast)`. Default is `ast`.
 - `copyright_header`: The path to the file containing the copyright header. If the copyright header is placed inside the same folder as the pigeon files, then you do not need to specify this option as the generator will automatically pick it.
-- `one_language`: The value `true` allow Pigeon to only generate code for one language. Default is `false`.
-- `debug_generators`: The value `true` prints the line number of the generator in comments at new lines. Default is `false`.
-- `base_path`: A base path to be prefixed to all outputs and copyright header path. Generally used for testing.
-- `skip_outputs`: The platforms to skip generating outputs for. Options include: android, ios, macos, linux, windows.
+- `debug_generators`: The value `true` prints the line number of the generator in comments at new lines.
+- `base_path`: A base path to be prepended to all provided output paths.
+- `skip_outputs`: The platforms to skip generating outputs for. Options include: `dart`, `dart_test`, `java`, `kotlin`, `swift`, `objc`, `cpp`, `gobject`, `ast`.
+- `out_folder`: The folder that will be appended to all output paths.
 - `out_template`: The template for the generated file name. The default is `name.g.extension` where `name` is the name of the pigeon file and `extension` is the platform specific extension. Example for the pigeon file named `test.dart`, the generated file for kotlin will be `Test.g.kt`.
 
 ### 3. Run the generator
@@ -146,4 +182,10 @@ To generate the code, run the following command:
 
 ```bash
 dart run build_runner build
+```
+
+You can use the watch mode to automatically regenerate the code when the pigeon files change:
+
+```bash
+dart run build_runner watch
 ```
