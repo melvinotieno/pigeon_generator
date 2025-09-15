@@ -5,6 +5,7 @@ import 'package:build/build.dart';
 import 'src/pigeon_builder.dart';
 import 'src/pigeon_config.dart';
 import 'src/pigeon_validator.dart';
+import 'src/utilities/config.dart';
 
 /// Creates a [PigeonBuilder] using the provided [BuilderOptions].
 ///
@@ -16,7 +17,11 @@ import 'src/pigeon_validator.dart';
 ///
 /// Returns a [PigeonBuilder] instance with the validated [PigeonConfig].
 Builder pigeonBuilder(BuilderOptions options) {
-  final pigeonConfig = PigeonConfig.fromMap(options.config);
+  // The config in options may contain YamlMap and YamlList types, therefore,
+  // convert them to standard Dart Map and List types.
+  final map = convertConfig(options.config);
+
+  final pigeonConfig = PigeonConfig.fromMap(map);
 
   // Validate the pigeon config first.
   PigeonValidator.validate(pigeonConfig);
