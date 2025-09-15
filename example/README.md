@@ -69,4 +69,38 @@ additional_public_assets:
   - pigeons/**
 ```
 
+**The following instructions are for use in development and testing of this package.**
+
 To test for android, copy the file `build.example.gradle` to `android/app/build.gradle`.
+
+### Cleanup Script Usage
+
+To clean up generated folders and prepare an Android project or library, use the `cleanup.sh` script.
+
+#### Make the script executable
+
+```bash
+chmod +x cleanup.sh
+```
+
+#### Run for Android application
+
+```bash
+./cleanup.sh android
+```
+
+This will:
+
+- Delete the folders: android, ast, ios, lib, linux, macos, output, test, windows.
+- Create `android/app/src` and copy `build.example.gradle` to `android/app/build.gradle`.
+
+#### Run for Android library
+
+```bash
+./cleanup.sh android --library
+```
+
+This will:
+
+- Delete the folders: android, ast, ios, lib, linux, macos, output, test, windows.
+- Create `android/src` and copy `build.example.gradle` to `android/build.gradle`.
