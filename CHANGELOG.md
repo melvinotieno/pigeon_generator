@@ -1,3 +1,7 @@
+## 3.0.1
+
+- Fixes issues caused by YamlMap and YamlList not being a subtype of Map and List respectively.
+
 ## 3.0.0
 
 - Fixes a crash when using the command `dart run build_runner watch`.
