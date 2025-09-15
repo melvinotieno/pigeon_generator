@@ -97,7 +97,7 @@ class PigeonValidator {
   static validateCopyrightHeader(String? path) {
     if (path == null) return;
 
-    if (!isValidFolder(path)) {
+    if (isValidFolder(path)) {
       throw ValidatorException('copyright_header', 'Folder provided.');
     }
 
