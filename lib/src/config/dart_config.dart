@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:meta/meta.dart';
 import 'package:path/path.dart' show join;
 import 'package:pigeon/pigeon.dart';
 
@@ -10,16 +7,12 @@ import 'output_config.dart';
 class DartConfig {
   DartConfig._internal({
     this.out,
-    this.testOut,
     this.packageName,
     Map<String, dynamic>? options,
   }) : _options = options;
 
   /// Configuration for the Dart file that will be generated.
   final OutputConfig? out;
-
-  /// Configuration for the Dart file that will be generated for test support.
-  final OutputConfig? testOut;
 
   /// The name of the package the pigeon files will be used in.
   final String? packageName;
@@ -74,7 +67,6 @@ class DartConfig {
         config['out'] as String? ?? defaultPath,
         extension: 'dart',
       ),
-      testOut: getTestOut(config['test_out'], outFolder),
       packageName: config['package_name'] as String?,
       options: config['options'] as Map<String, dynamic>?,
     );
@@ -113,48 +105,6 @@ class DartConfig {
       copyrightHeader: _options['copyright_header'] as Iterable<String>?,
       sourceOutPath: sourceOut?.let((path) => join(path, '$input.dart')),
       testOutPath: testOut?.let((path) => join(path, '${input}_test.dart')),
-    );
-  }
-
-  /// Returns the output configuration for the test file.
-  ///
-  /// Parameters:
-  /// - [test]: The test configuration value. Can be:
-  ///   - `false`: Explicitly disables test file generation
-  ///   - `null`: Disables test file generation unless 'test' directory exists
-  ///   - `String`: Specifies the output path for the test file
-  ///   - Any other type: Uses the default test output path
-  /// - [outFolder]: Optional folder path for output files. If provided, the
-  ///   default Dart test output path will be 'test/{outFolder}'
-  ///
-  /// Returns:
-  /// - `null` if test file generation is disabled
-  /// - An [OutputConfig] instance for the Dart test files
-  ///
-  /// Example:
-  /// ```dart
-  /// // Disable test file generation
-  /// final testOut1 = DartConfig.getTestOut(false);
-  /// final testOut2 = DartConfig.getTestOut(null); // 'test' does not exist
-  ///
-  /// // Enable with default settings
-  /// final testOut3 = DartConfig.getTestOut(true, 'my_project');
-  ///
-  /// // Custom output path
-  /// final testOut4 = DartConfig.getTestOut('custom/test/path', 'my_project');
-  /// ```
-  @visibleForTesting
-  static OutputConfig? getTestOut(dynamic test, [String? outFolder]) {
-    if (test == false || (test == null && !Directory('test').existsSync())) {
-      return null;
-    }
-
-    final testOutPath = test is String ? test : join('test', outFolder);
-
-    return OutputConfig.fromOptions(
-      testOutPath,
-      extension: 'dart',
-      append: '_test',
     );
   }
 }

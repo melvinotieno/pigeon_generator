@@ -62,7 +62,6 @@ However, a full list of the configurations you can set is shown below:
 inputs: pigeons
 dart:
   out: "lib"
-  test_out: "test"
   package_name: "pigeon_generator_example"
   options:
     source_out: "path/to/source"
@@ -122,7 +121,6 @@ out_template: "name.g.extension"
 - `inputs`: The folder path where the pigeon files are located. Default is `pigeons`.
 - `dart`: Dart code generation configuration. Defaults will be used if not specified, and disabled if `false`.
   - `out`: The folder path where the Dart code will be generated `(.dart)`. If not defined, this defaults to `lib`.
-  - `test_out`: The folder path where the Dart test code will be generated `(_test.dart)`. If the value is `true` or `test` directory exists, this defaults to `test`.
   - `package_name`: The name of the package the pigeon files will be used in.
   - `options`:
     - `source_out`: The folder path where the Dart source files will be generated.

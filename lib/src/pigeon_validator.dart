@@ -34,7 +34,7 @@ class PigeonValidator {
 
   /// Validate the inputs configuration.
   @visibleForTesting
-  static validateInputs(String inputs) {
+  static void validateInputs(String inputs) {
     if (!isValidFolder(inputs)) {
       throw ValidatorException('inputs', 'Invalid folder provided.');
     }
@@ -42,59 +42,58 @@ class PigeonValidator {
 
   /// Validate the dart configuration.
   @visibleForTesting
-  static validateDartConfig(DartConfig config) {
+  static void validateDartConfig(DartConfig config) {
     validateOutput('dart.out', config.out);
-    validateOutput('dart.test_out', config.testOut);
   }
 
   /// Validate the objc configuration.
   @visibleForTesting
-  static validateObjcConfig(ObjcConfig config) {
+  static void validateObjcConfig(ObjcConfig config) {
     validateOutput('objc.header_out', config.headerOut);
     validateOutput('objc.source_out', config.sourceOut);
   }
 
   /// Validate the java configuration.
   @visibleForTesting
-  static validateJavaConfig(JavaConfig config) {
+  static void validateJavaConfig(JavaConfig config) {
     validateOutput('java.out', config.out);
   }
 
   /// Validate the swift configuration.
   @visibleForTesting
-  static validateSwiftConfig(SwiftConfig config) {
+  static void validateSwiftConfig(SwiftConfig config) {
     validateOutput('swift.out', config.out);
   }
 
   /// Validate the kotlin configuration.
   @visibleForTesting
-  static validateKotlinConfig(KotlinConfig config) {
+  static void validateKotlinConfig(KotlinConfig config) {
     validateOutput('kotlin.out', config.out);
   }
 
   /// Validate the cpp configuration.
   @visibleForTesting
-  static validateCppConfig(CppConfig config) {
+  static void validateCppConfig(CppConfig config) {
     validateOutput('cpp.header_out', config.headerOut);
     validateOutput('cpp.source_out', config.sourceOut);
   }
 
   /// Validate the gobject configuration.
   @visibleForTesting
-  static validateGobjectConfig(GObjectConfig config) {
+  static void validateGobjectConfig(GObjectConfig config) {
     validateOutput('gobject.header_out', config.headerOut);
     validateOutput('gobject.source_out', config.sourceOut);
   }
 
   /// Validate the ast configuration.
   @visibleForTesting
-  static validateAstConfig(AstConfig config) {
+  static void validateAstConfig(AstConfig config) {
     validateOutput('ast.out', config.out);
   }
 
   /// Validate the copyright_header configuration.
   @visibleForTesting
-  static validateCopyrightHeader(String? path) {
+  static void validateCopyrightHeader(String? path) {
     if (path == null) return;
 
     if (isValidFolder(path)) {
@@ -110,7 +109,7 @@ class PigeonValidator {
 
   /// Validate the output configuration.
   @visibleForTesting
-  static validateOutput(String field, OutputConfig? output) {
+  static void validateOutput(String field, OutputConfig? output) {
     if (output == null) return;
 
     if (!isValidFolder(output.path)) {

@@ -6,7 +6,6 @@ targets:
           inputs: pigeons # Default
           dart: # Or true/false
             out: "lib" # Default if not set or true
-            test_out: "test" # Or true/false
             package_name: "pigeon_generator_example"
             options:
               source_out: "lib/src"

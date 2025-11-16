@@ -1,3 +1,8 @@
+## 3.1.0
+
+- Updates minimum Pigeon version to 26.1.0.
+- Removes deprecated dartTestOut option.
+
 ## 3.0.1
 
 - Fixes issues caused by YamlMap and YamlList not being a subtype of Map and List respectively.

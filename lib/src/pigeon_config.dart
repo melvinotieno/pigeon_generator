@@ -138,7 +138,6 @@ class PigeonConfig {
     PigeonOptions options = PigeonOptions(
       input: input,
       dartOut: getOutputPath(dart.out),
-      dartTestOut: getOutputPath(dart.testOut),
       dartPackageName: dart.packageName,
       dartOptions: dart.getOptions(fileName),
       objcHeaderOut: getOutputPath(objc.headerOut),
