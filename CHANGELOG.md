@@ -1,3 +1,9 @@
+## 3.1.1
+
+- Updates minimum supported SDK version to Dart 3.9.
+- Updates minimum Pigeon version to 26.1.3.
+- Removes all references to the deprecated `dartTestOut` option.
+
 ## 3.1.0
 
 - Updates minimum Pigeon version to 26.1.0.
