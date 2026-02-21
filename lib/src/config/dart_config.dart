@@ -47,7 +47,6 @@ class DartConfig {
   /// // Enable with provided configuration
   /// final config5 = DartConfig.fromMap({
   ///  'out': 'custom/path',
-  ///  'test_out': 'custom/test/path',
   ///  'package_name': 'custom_package',
   ///  'options': {
   ///    'copyright_header': ['Copyright Header'],
