@@ -92,7 +92,6 @@ class PigeonScratchSpace extends ScratchSpace {
 
     final newPigeonOptions = PigeonOptions(
       dartOut: getPath(pigeonOptions.dartOut),
-      dartTestOut: getPath(pigeonOptions.dartTestOut),
       cppHeaderOut: getPath(pigeonOptions.cppHeaderOut),
       cppSourceOut: getPath(pigeonOptions.cppSourceOut),
       gobjectHeaderOut: getPath(pigeonOptions.gobjectHeaderOut),

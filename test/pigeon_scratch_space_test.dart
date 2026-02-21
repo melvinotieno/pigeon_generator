@@ -28,7 +28,6 @@ void main() {
     test('getPigeonOptions updates paths correctly', () {
       final pigeonOptions = PigeonOptions(
         dartOut: 'lib/dart_out.dart',
-        dartTestOut: 'lib/dart_test_out.dart',
         cppHeaderOut: 'lib/cpp_header.h',
         cppSourceOut: 'lib/cpp_source.cpp',
         gobjectHeaderOut: 'lib/gobject_header.h',
@@ -63,7 +62,6 @@ void main() {
       );
 
       expect(updatedOptions.dartOut, '$libPath/dart_out.dart');
-      expect(updatedOptions.dartTestOut, '$libPath/dart_test_out.dart');
       expect(updatedOptions.cppHeaderOut, '$libPath/cpp_header.h');
       expect(updatedOptions.cppSourceOut, '$libPath/cpp_source.cpp');
       expect(updatedOptions.gobjectHeaderOut, '$libPath/gobject_header.h');
