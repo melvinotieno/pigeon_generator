@@ -35,7 +35,6 @@ extension PigeonOptionsExtension on PigeonOptions {
   ///
   /// The following output types are checked:
   /// - Dart output ([dartOut])
-  /// - Dart test output ([dartTestOut])
   /// - C++ header and source ([cppHeaderOut], [cppSourceOut])
   /// - GObject header and source ([gobjectHeaderOut], [gobjectSourceOut])
   /// - Kotlin output ([kotlinOut])
@@ -57,7 +56,6 @@ extension PigeonOptionsExtension on PigeonOptions {
   List<String> getOutputs() {
     final outputs = [
       dartOut,
-      dartTestOut,
       cppHeaderOut,
       cppSourceOut,
       gobjectHeaderOut,
@@ -108,9 +106,6 @@ extension PigeonOptionsExtension on PigeonOptions {
         case 'dart':
           optionsMap.remove('dartOut');
           optionsMap.remove('dartOptions');
-          break;
-        case 'dart_test':
-          optionsMap.remove('dartTestOut');
           break;
         case 'java':
           optionsMap.remove('javaOut');

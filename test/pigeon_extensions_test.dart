@@ -81,7 +81,6 @@ void main() {
       test('should return all set outputs', () {
         final options = PigeonOptions(
           dartOut: 'lib/api.dart',
-          dartTestOut: 'test/api_test.dart',
           cppHeaderOut: 'cpp/api.h',
           cppSourceOut: 'cpp/api.cpp',
           gobjectHeaderOut: 'gobject/api.h',
@@ -98,7 +97,6 @@ void main() {
 
         final expected = [
           'lib/api.dart',
-          'test/api_test.dart',
           'cpp/api.h',
           'cpp/api.cpp',
           'gobject/api.h',
@@ -119,7 +117,6 @@ void main() {
       test('skips outputs correctly', () {
         final options = PigeonOptions(
           dartOut: 'lib/api.dart',
-          dartTestOut: 'test/api_test.dart',
           cppHeaderOut: 'cpp/api.h',
           cppSourceOut: 'cpp/api.cpp',
           gobjectHeaderOut: 'gobject/api.h',
@@ -147,7 +144,6 @@ void main() {
         final result = options.skipOutputs(skipOutputs);
 
         expect(result.dartOut, isNull);
-        expect(result.dartTestOut, isNull);
         expect(result.dartOptions, isNull);
         expect(result.javaOut, isNull);
         expect(result.javaOptions, isNull);
