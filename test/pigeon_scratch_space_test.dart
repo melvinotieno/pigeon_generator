@@ -42,7 +42,6 @@ void main() {
 
       final allowedOutputs = [
         AssetId('test_package', 'lib/dart_out.dart'),
-        AssetId('test_package', 'lib/dart_test_out.dart'),
         AssetId('test_package', 'lib/cpp_header.h'),
         AssetId('test_package', 'lib/cpp_source.cpp'),
         AssetId('test_package', 'lib/gobject_header.h'),

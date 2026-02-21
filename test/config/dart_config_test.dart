@@ -32,11 +32,7 @@ void main() {
       });
 
       test('should return config with provided values', () {
-        final map = {
-          'out': 'custom/lib',
-          'test_out': 'custom/test',
-          'package_name': 'dart_package',
-        };
+        final map = {'out': 'custom/lib', 'package_name': 'dart_package'};
 
         // Tests without base folder path
         DartConfig config = DartConfig.fromMap(map);
