@@ -2,8 +2,8 @@ name: pigeon_generator_example
 description: Example of how to use pigeon_generator
 publish_to: none
 
-environment: 
-  sdk: ^3.7.0
+environment:
+  sdk: ^3.9.0
 
 dependencies:
   flutter:
