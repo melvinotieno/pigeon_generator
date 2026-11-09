@@ -81,7 +81,7 @@ java:
     copyright_header: ["Copyright Header"]
     use_generated_annotation: true
 swift:
-  out: "ios/Runner"
+  out: "ios/Runner" # Or ["ios/Runner", "macos/Runner"]
   options:
     copyright_header: ["Copyright Header"]
     include_error_class: true
@@ -140,7 +140,7 @@ out_template: "name.g.extension"
     - `copyright_header`: A copyright header that will get prepended to generated code.
     - `use_generated_annotation`: Determines if the javax.annotation.Generated is used in the output. This is false by default since that dependency isn't available in plugins by default.
 - `swift`: Swift code generation configuration. Defaults will be used if the value is `true` or if `ios` directory exists.
-  - `out`: The folder path where the Swift code will be generated `(.swift)`. Default is `ios/Runner`.
+  - `out`: The folder path(s) where the Swift code will be generated `(.swift)`. Can be a single folder path or a list of folder paths. Default is `ios/Runner`.
   - `options`:
     - `copyright_header`: A copyright header that will get prepended to generated code.
     - `include_error_class`: Whether to include the error class in generation. This should only ever be set to false if you have another generated Swift file in the same directory.
@@ -171,7 +171,7 @@ out_template: "name.g.extension"
 - `copyright_header`: The path to the file containing the copyright header. If the copyright header is placed inside the same folder as the pigeon files, then you do not need to specify this option as the generator will automatically pick it.
 - `debug_generators`: The value `true` prints the line number of the generator in comments at new lines.
 - `base_path`: A base path to be prepended to all provided output paths.
-- `skip_outputs`: The platforms to skip generating outputs for. Options include: `dart`, `dart_test`, `java`, `kotlin`, `swift`, `objc`, `cpp`, `gobject`, `ast`.
+- `skip_outputs`: The platforms to skip generating outputs for. Options include: `dart`, `java`, `kotlin`, `swift`, `objc`, `cpp`, `gobject`, `ast`.
 - `out_folder`: The folder that will be appended to all output paths.
 - `out_template`: The template for the generated file name. The default is `name.g.extension` where `name` is the name of the pigeon file and `extension` is the platform-specific extension. Example for the pigeon file named `test.dart`, the generated file for Kotlin will be `Test.g.kt`.
 
