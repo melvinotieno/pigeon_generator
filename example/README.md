@@ -14,6 +14,7 @@ targets:
               source_out: "lib/src"
               test_out: "test/src"
               copyright_header: ["Copyright 2024"]
+              ignore_lints: true
           objc: # Or true/false
             header_out: "macos/Runner"
             source_out: "macos/Runner"
@@ -38,6 +39,7 @@ targets:
               package: "com.example.pigeon_generator_example"
               copyright_header: ["Copyright 2024"]
               include_error_class: true
+              use_generated_annotation: false
           cpp: # Or true/false
             header_out: "windows/runner"
             source_out: "windows/runner"
@@ -51,7 +53,7 @@ targets:
             source_out: "linux"
             options:
               header_include: "linux"
-              namespace: "pigeon_generator_example"
+              module: "pigeon_generator_example"
               copyright_header: ["Copyright 2024"]
               header_out: "linux"
           ast: # Or true/false
@@ -59,6 +61,7 @@ targets:
           copyright_header: "pigeons/copyright.txt" # Not required if copyright.txt is in the same directory as the pigeons
           debug_generators: false
           base_path: "pigeon_generator_example"
+          ignore_lints: true
           skip_outputs:
             defaults: [objc] # Options include: dart, java, kotlin, swift, objc, cpp, gobject, ast
           out_folder: "pigeons"

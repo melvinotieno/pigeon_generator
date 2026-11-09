@@ -67,6 +67,7 @@ dart:
     source_out: "path/to/source"
     test_out: "path/to/test"
     copyright_header: ["Copyright Header"]
+    ignore_lints: true
 objc:
   header_out: "macos/Runner"
   source_out: "macos/Runner"
@@ -91,6 +92,7 @@ kotlin:
     package: "com.example.pigeon_generator_example"
     copyright_header: ["Copyright Header"]
     include_error_class: true
+    use_generated_annotation: false
 cpp:
   header_out: "windows/runner"
   source_out: "windows/runner"
@@ -112,6 +114,7 @@ ast:
 copyright_header: "pigeons/copyright.txt"
 debug_generators: false
 base_path: "pigeon_generator_example"
+ignore_lints: true
 skip_outputs:
   defaults: [objc] # Do not generate output for objc for pigeons/defaults.dart
 out_folder: "pigeons"
@@ -126,6 +129,7 @@ out_template: "name.g.extension"
     - `source_out`: The folder path where the Dart source files will be generated.
     - `test_out`: The folder path where the Dart test files will be generated.
     - `copyright_header`: A copyright header that will get prepended to generated code.
+    - `ignore_lints`: Whether to ignore lint violations in generated Dart code. Default is `true`.
 - `objc`: Objective-C code generation configuration. Defaults will be used if the value is `true`.
   - `header_out`: The folder path where the Objective-C header files will be generated `(.h)`. Default is `macos/Runner`.
   - `source_out`: The folder path where the Objective-C source files will be generated `(.m)`. Default is `macos/Runner`.
@@ -150,6 +154,7 @@ out_template: "name.g.extension"
     - `package`: The package where the generated class will live.
     - `copyright_header`: A copyright header that will get prepended to generated code.
     - `include_error_class`: Whether to include the error class in generation. This should only ever be set to false if you have another generated Kotlin file in the same directory.
+    - `use_generated_annotation`: Determines if `javax.annotation.Generated` is used in the output. Default is `false`.
 - `cpp`: C++ code generation configuration for Windows. Defaults will be used if the value is `true` or if `windows` directory exists.
   - `header_out`: The folder path where the C++ header files will be generated `(.h)`. Default is `windows/runner`.
   - `source_out`: The folder path where the C++ source files will be generated `(.cpp)`. Default is `windows/runner`.
@@ -171,6 +176,7 @@ out_template: "name.g.extension"
 - `copyright_header`: The path to the file containing the copyright header. If the copyright header is placed inside the same folder as the pigeon files, then you do not need to specify this option as the generator will automatically pick it.
 - `debug_generators`: The value `true` prints the line number of the generator in comments at new lines.
 - `base_path`: A base path to be prepended to all provided output paths.
+- `ignore_lints`: Whether to ignore lint violations in generated Dart code. Default is `true`.
 - `skip_outputs`: The platforms to skip generating outputs for. Options include: `dart`, `java`, `kotlin`, `swift`, `objc`, `cpp`, `gobject`, `ast`.
 - `out_folder`: The folder that will be appended to all output paths.
 - `out_template`: The template for the generated file name. The default is `name.g.extension` where `name` is the name of the pigeon file and `extension` is the platform-specific extension. Example for the pigeon file named `test.dart`, the generated file for Kotlin will be `Test.g.kt`.
