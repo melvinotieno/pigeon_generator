@@ -1,3 +1,13 @@
+## 4.0.0
+
+- Adds support for multiple Swift output paths in `swift.out` configuration and `PigeonOptions.swiftOut`.
+
+### Breaking Changes
+
+- Updates minimum supported SDK version to Dart 3.11.
+- Updates minimum Pigeon version to 29.1.1.
+- `SwiftConfig.out` is now `Iterable<OutputConfig>?` instead of `OutputConfig?` to support multiple Swift output locations.
+
 ## 3.1.1
 
 - Updates minimum supported SDK version to Dart 3.9.
