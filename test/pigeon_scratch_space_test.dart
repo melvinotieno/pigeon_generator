@@ -71,6 +71,23 @@ void main() {
       expect(updatedOptions.objcHeaderOut, '$libPath/objc_header.h');
       expect(updatedOptions.objcSourceOut, '$libPath/objc_source.m');
       expect(updatedOptions.astOut, '$libPath/ast_out.ast');
+
+      final multiSwiftOptions = PigeonOptions(
+        swiftOut: ['lib/swift_out_1.swift', 'lib/swift_out_2.swift'],
+      );
+      final multiSwiftAllowedOutputs = [
+        AssetId('test_package', 'lib/swift_out_1.swift'),
+        AssetId('test_package', 'lib/swift_out_2.swift'),
+      ];
+      final updatedMultiSwiftOptions = scratchSpace.getPigeonOptions(
+        multiSwiftOptions,
+        multiSwiftAllowedOutputs,
+      );
+
+      expect(updatedMultiSwiftOptions.swiftOut, [
+        '$libPath/swift_out_1.swift',
+        '$libPath/swift_out_2.swift',
+      ]);
     });
   });
 }

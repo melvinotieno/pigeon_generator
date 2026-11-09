@@ -131,7 +131,6 @@ void main() {
 
         final skipOutputs = [
           'dart',
-          'dart_test',
           'java',
           'kotlin',
           'swift',

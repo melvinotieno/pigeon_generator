@@ -145,7 +145,10 @@ class PigeonConfig {
       objcOptions: objc.getOptions(fileName),
       javaOut: getOutputPath(java.out),
       javaOptions: java.getOptions(fileName),
-      swiftOut: getOutputPath(swift.out),
+      swiftOut: swift.out
+          ?.map(getOutputPath)
+          .whereType<String>()
+          .toList(),
       swiftOptions: swift.getOptions(fileName),
       kotlinOut: getOutputPath(kotlin.out),
       kotlinOptions: kotlin.getOptions(fileName),

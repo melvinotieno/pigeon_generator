@@ -79,7 +79,7 @@ void main() {
         final options = config.getPigeonOptions('pigeons/api_file.dart');
 
         expect(options.dartOut, equals('lib/api_file.g.dart'));
-        expect(options.swiftOut, equals('ios/Runner/ApiFile.g.swift'));
+        expect(options.swiftOut, equals(['ios/Runner/ApiFile.g.swift']));
       });
     });
   });

@@ -62,7 +62,7 @@ extension PigeonOptionsExtension on PigeonOptions {
       gobjectSourceOut,
       kotlinOut,
       javaOut,
-      swiftOut,
+      ...?swiftOutPaths,
       objcHeaderOut,
       objcSourceOut,
       astOut,
@@ -76,7 +76,6 @@ extension PigeonOptionsExtension on PigeonOptions {
   /// Parameters:
   /// - [platforms]: A list of platform names to skip. Valid platform names are:
   ///   - `'dart'`: Removes Dart output and options
-  ///   - `'dart_test'`: Removes Dart test output
   ///   - `'java'`: Removes Java output and options
   ///   - `'kotlin'`: Removes Kotlin output and options
   ///   - `'swift'`: Removes Swift output and options

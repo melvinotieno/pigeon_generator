@@ -62,7 +62,11 @@ class PigeonValidator {
   /// Validate the swift configuration.
   @visibleForTesting
   static void validateSwiftConfig(SwiftConfig config) {
-    validateOutput('swift.out', config.out);
+    if (config.out == null) return;
+
+    for (final output in config.out!) {
+      validateOutput('swift.out', output);
+    }
   }
 
   /// Validate the kotlin configuration.

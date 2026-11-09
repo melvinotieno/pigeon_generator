@@ -98,7 +98,12 @@ class PigeonScratchSpace extends ScratchSpace {
       gobjectSourceOut: getPath(pigeonOptions.gobjectSourceOut),
       kotlinOut: getPath(pigeonOptions.kotlinOut),
       javaOut: getPath(pigeonOptions.javaOut),
-      swiftOut: getPath(pigeonOptions.swiftOut),
+      swiftOut: switch (pigeonOptions.swiftOut) {
+        final String path => getPath(path),
+        final Iterable<dynamic> paths =>
+          paths.whereType<String>().map(getPath).whereType<String>().toList(),
+        _ => null,
+      },
       objcHeaderOut: getPath(pigeonOptions.objcHeaderOut),
       objcSourceOut: getPath(pigeonOptions.objcSourceOut),
       astOut: getPath(pigeonOptions.astOut),
