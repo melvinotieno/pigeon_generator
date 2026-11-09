@@ -103,6 +103,7 @@ void main() {
           'options': {
             'package': 'com.example.myapp',
             'include_error_class': true,
+            'use_generated_annotation': true,
             'copyright_header': ['Copyright 2024'],
           },
         };
@@ -113,6 +114,7 @@ void main() {
         expect(options?.package, 'com.example.myapp');
         expect(options?.errorClassName, 'CustomError');
         expect(options?.includeErrorClass, isTrue);
+        expect(options?.useGeneratedAnnotation, isTrue);
         expect(options?.copyrightHeader, contains('Copyright 2024'));
       });
     });

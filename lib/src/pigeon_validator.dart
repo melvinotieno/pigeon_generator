@@ -64,6 +64,10 @@ class PigeonValidator {
   static void validateSwiftConfig(SwiftConfig config) {
     if (config.out == null) return;
 
+    if (config.out!.isEmpty) {
+      throw ValidatorException('swift.out', 'Invalid folder provided.');
+    }
+
     for (final output in config.out!) {
       validateOutput('swift.out', output);
     }

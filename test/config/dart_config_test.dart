@@ -85,6 +85,7 @@ void main() {
             'source_out': 'src/generated',
             'test_out': 'test/generated',
             'copyright_header': ['Copyright 2024'],
+            'ignore_lints': false,
           },
         };
 
@@ -94,6 +95,7 @@ void main() {
         expect(options?.sourceOutPath, equals('src/generated/file.dart'));
         expect(options?.testOutPath, equals('test/generated/file_test.dart'));
         expect(options?.copyrightHeader, contains('Copyright 2024'));
+        expect(options?.toMap()['ignoreLints'], isFalse);
       });
     });
   });

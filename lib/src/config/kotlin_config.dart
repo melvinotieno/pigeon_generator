@@ -110,6 +110,8 @@ class KotlinConfig {
       errorClassName: '${input.pascalCase}Error',
       copyrightHeader: _options['copyright_header'] as Iterable<String>?,
       includeErrorClass: _options['include_error_class'] as bool? ?? true,
+      useGeneratedAnnotation:
+          _options['use_generated_annotation'] as bool? ?? false,
     );
   }
 }

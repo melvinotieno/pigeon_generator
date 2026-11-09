@@ -104,6 +104,7 @@ class DartConfig {
       copyrightHeader: _options['copyright_header'] as Iterable<String>?,
       sourceOutPath: sourceOut?.let((path) => join(path, '$input.dart')),
       testOutPath: testOut?.let((path) => join(path, '${input}_test.dart')),
+      ignoreLints: _options['ignore_lints'] as bool? ?? true,
     );
   }
 }
