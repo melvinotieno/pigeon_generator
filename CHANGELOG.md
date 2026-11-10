@@ -3,6 +3,7 @@
 - Adds support for multiple Swift output paths in `swift.out` configuration and `PigeonOptions.swiftOut`.
 - Adds support for `ignore_lints` in top-level and `dart.options` configuration, and `use_generated_annotation` in `kotlin.options` configuration.
 - Passes `copyrightHeader` to `PigeonOptions` in `PigeonConfig.getPigeonOptions`.
+- Fixes path separator issues on Windows across configuration, builder, and scratch space paths.
 - Fixes `gobject` option key in example files (`module` instead of `namespace`).
 
 ### Breaking Changes
