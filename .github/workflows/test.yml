@@ -8,15 +8,16 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
+        os: [ubuntu-latest, windows-latest]
         sdk: [3.11]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Setup Dart
         uses: dart-lang/setup-dart@v1
@@ -27,4 +28,4 @@ jobs:
         run: dart pub get --no-example
 
       - name: Run tests
-        run: dart test --concurrency=1
+        run: dart test
