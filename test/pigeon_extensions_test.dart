@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:pigeon/pigeon.dart';
 import 'package:pigeon_generator/src/pigeon_extensions.dart';
 import 'package:test/test.dart';
@@ -7,17 +8,12 @@ import 'package:test/test.dart';
 void main() {
   group('PigeonOptionsExtension', () {
     late Directory tempDir;
-    late String originalDir;
 
     setUpAll(() async {
-      originalDir = Directory.current.path;
       tempDir = await Directory.systemTemp.createTemp('pigeon_test_');
-      Directory.current = tempDir;
     });
 
     tearDownAll(() async {
-      Directory.current = originalDir;
-
       if (await tempDir.exists()) {
         await tempDir.delete(recursive: true);
       }
@@ -35,10 +31,11 @@ void main() {
           }
         ''';
 
-        await File('defaults.dart').writeAsString(content);
+        final file = File(p.join(tempDir.path, 'defaults.dart'));
+        await file.writeAsString(content);
 
         final options = PigeonOptions(dartOut: 'lib/api.dart');
-        final mergedOptions = options.mergeInputOptions('defaults.dart');
+        final mergedOptions = options.mergeInputOptions(file.path);
 
         expect(identical(options, mergedOptions), isTrue);
       });
@@ -60,10 +57,11 @@ void main() {
           }
         ''';
 
-        await File('overrides.dart').writeAsString(content);
+        final file = File(p.join(tempDir.path, 'overrides.dart'));
+        await file.writeAsString(content);
 
         final options = PigeonOptions(dartOut: 'lib/api.dart');
-        final mergedOptions = options.mergeInputOptions('overrides.dart');
+        final mergedOptions = options.mergeInputOptions(file.path);
 
         expect(mergedOptions.dartOut, equals('lib/overridden_api.dart'));
         expect(mergedOptions.javaOut, equals('android/Api.java'));

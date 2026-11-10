@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:meta/meta.dart';
-import 'package:path/path.dart' as path;
+import 'package:path/path.dart' as p;
 
 import 'config/ast_config.dart';
 import 'config/cpp_config.dart';
@@ -132,7 +132,7 @@ class PigeonValidator {
     if (folder.isEmpty) return false;
 
     // If an extension exists, then this is a file and not a folder.
-    if (path.extension(folder).isNotEmpty) return false;
+    if (p.extension(folder).isNotEmpty) return false;
 
     return true;
   }

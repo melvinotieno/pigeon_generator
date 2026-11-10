@@ -1,4 +1,4 @@
-import 'package:path/path.dart' show join;
+import 'package:path/path.dart' as p;
 import 'package:pigeon/pigeon.dart';
 
 import 'output_config.dart';
@@ -55,7 +55,7 @@ final class ObjcConfig {
 
     final config = map is Map ? map : <String, dynamic>{};
     final parts = outFolder?.split('/').map((part) => part.capitalize());
-    final defaultPath = join('macos/Runner', parts?.join('/'));
+    final defaultPath = p.posix.join('macos/Runner', parts?.join('/'));
 
     return ObjcConfig._internal(
       headerOut: OutputConfig.fromOptions(
@@ -97,7 +97,9 @@ final class ObjcConfig {
     final headerInclude = _options['header_include'] as String?;
 
     return ObjcOptions(
-      headerIncludePath: headerInclude?.let((path) => join(path, '$input.h')),
+      headerIncludePath: headerInclude?.let(
+        (path) => p.posix.join(path, '$input.h'),
+      ),
       prefix: _options['prefix'] as String?,
       copyrightHeader: _options['copyright_header'] as Iterable<String>?,
     );

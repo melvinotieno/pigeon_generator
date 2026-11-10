@@ -1,4 +1,4 @@
-import 'package:path/path.dart' show join;
+import 'package:path/path.dart' as p;
 import 'package:pigeon/pigeon.dart';
 
 import 'output_config.dart';
@@ -59,7 +59,7 @@ class DartConfig {
     if (map == false) return DartConfig._internal();
 
     final config = map is Map ? map : <String, dynamic>{};
-    final defaultPath = join('lib', outFolder);
+    final defaultPath = p.posix.join('lib', outFolder);
 
     return DartConfig._internal(
       out: OutputConfig.fromOptions(
@@ -102,8 +102,12 @@ class DartConfig {
 
     return DartOptions(
       copyrightHeader: _options['copyright_header'] as Iterable<String>?,
-      sourceOutPath: sourceOut?.let((path) => join(path, '$input.dart')),
-      testOutPath: testOut?.let((path) => join(path, '${input}_test.dart')),
+      sourceOutPath: sourceOut?.let(
+        (path) => p.posix.join(path, '$input.dart'),
+      ),
+      testOutPath: testOut?.let(
+        (path) => p.posix.join(path, '${input}_test.dart'),
+      ),
       ignoreLints: _options['ignore_lints'] as bool? ?? true,
     );
   }
