@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:path/path.dart' as path;
+import 'package:path/path.dart' as p;
 import 'package:pigeon/pigeon.dart';
 
 import 'config/ast_config.dart';
@@ -29,6 +29,7 @@ class PigeonConfig {
     this.copyrightHeader,
     this.debugGenerators,
     this.basePath,
+    this.ignoreLints,
     this.skipOutputs,
     this.outFolder,
     String? outTemplate,
@@ -70,6 +71,9 @@ class PigeonConfig {
   /// A base path to be prepended to all provided output paths.
   final String? basePath;
 
+  /// Whether to ignore lint violations in generated Dart code.
+  final bool? ignoreLints;
+
   /// Declares which code generation outputs should be skipped.
   final dynamic skipOutputs;
 
@@ -86,7 +90,7 @@ class PigeonConfig {
     String? copyrightHeader = map['copyright_header'] as String?;
     if (copyrightHeader == null) {
       // If copyright.txt file exists in inputs, set as copyright header.
-      final copyrightPath = path.join(inputs, 'copyright.txt');
+      final copyrightPath = p.posix.join(inputs, 'copyright.txt');
       final hasCopyright = File(copyrightPath).existsSync();
       if (hasCopyright) copyrightHeader = copyrightPath;
     }
@@ -106,6 +110,7 @@ class PigeonConfig {
       copyrightHeader: copyrightHeader,
       debugGenerators: map['debug_generators'] as bool?,
       basePath: map['base_path'] as String?,
+      ignoreLints: map['ignore_lints'] as bool?,
       skipOutputs: map['skip_outputs'], // YamlMap
       outFolder: outFolder,
       outTemplate: map['out_template'] as String?,
@@ -114,7 +119,7 @@ class PigeonConfig {
 
   /// Get pigeon options for a specific input file.
   PigeonOptions getPigeonOptions(String input) {
-    final fileName = path.basenameWithoutExtension(input);
+    final fileName = p.basenameWithoutExtension(input);
 
     String? getOutputPath(OutputConfig? config) {
       if (config == null) return null;
@@ -132,7 +137,7 @@ class PigeonConfig {
       outputName = outputName.replaceAll('name', name);
       outputName = outputName.replaceAll('extension', config.extension);
 
-      return path.join(config.path, outputName);
+      return p.posix.join(config.path, outputName);
     }
 
     PigeonOptions options = PigeonOptions(
@@ -145,7 +150,10 @@ class PigeonConfig {
       objcOptions: objc.getOptions(fileName),
       javaOut: getOutputPath(java.out),
       javaOptions: java.getOptions(fileName),
-      swiftOut: getOutputPath(swift.out),
+      swiftOut: swift.out
+          ?.map(getOutputPath)
+          .whereType<String>()
+          .toList(),
       swiftOptions: swift.getOptions(fileName),
       kotlinOut: getOutputPath(kotlin.out),
       kotlinOptions: kotlin.getOptions(fileName),
@@ -155,9 +163,11 @@ class PigeonConfig {
       gobjectHeaderOut: getOutputPath(gobject.headerOut),
       gobjectSourceOut: getOutputPath(gobject.sourceOut),
       gobjectOptions: gobject.getOptions(fileName),
+      copyrightHeader: copyrightHeader,
       astOut: getOutputPath(ast.out),
       debugGenerators: debugGenerators,
       basePath: basePath,
+      ignoreLints: ignoreLints ?? true,
     );
 
     if (skipOutputs?.containsKey(fileName) == true) {

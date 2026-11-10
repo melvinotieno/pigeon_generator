@@ -1,0 +1,12 @@
+# Several test suites inside pigeon_generator modify Directory.current
+# to a temporary directory in their setUpAll() and restore it in tearDownAll().
+# Because Directory.current is a process-global state, when Dart's test runner
+# runs these suites in parallel (which is the default), they fight over the current directory.
+#
+# When one suite was running, another suite would modify Directory.current
+# under its feet or delete the directory entirely. This would crash the running test
+# before the tearDownAll could clean up. Since the current directory was broken,
+# test files like overrides.dart got dumped into your project root.
+#
+# Therefore, tests must be run sequentially to prevent interference.
+concurrency: 1

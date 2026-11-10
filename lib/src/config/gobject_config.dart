@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:path/path.dart' show join;
+import 'package:path/path.dart' as p;
 import 'package:pigeon/pigeon.dart';
 
 import 'output_config.dart';
@@ -60,7 +60,7 @@ class GObjectConfig {
     }
 
     final config = map is Map ? map : <String, dynamic>{};
-    final defaultPath = join('linux', outFolder);
+    final defaultPath = p.posix.join('linux', outFolder);
 
     return GObjectConfig._internal(
       headerOut: OutputConfig.fromOptions(
@@ -106,10 +106,12 @@ class GObjectConfig {
     final headerOut = _options['header_out'] as String?;
 
     return GObjectOptions(
-      headerIncludePath: headerInclude?.let((path) => join(path, '$input.h')),
+      headerIncludePath: headerInclude?.let(
+        (path) => p.posix.join(path, '$input.h'),
+      ),
       module: _options['module'] as String?,
       copyrightHeader: _options['copyright_header'] as Iterable<String>?,
-      headerOutPath: headerOut?.let((path) => join(path, '$input.h')),
+      headerOutPath: headerOut?.let((path) => p.posix.join(path, '$input.h')),
     );
   }
 }

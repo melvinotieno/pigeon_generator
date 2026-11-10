@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:build/build.dart';
 import 'package:meta/meta.dart';
-import 'package:path/path.dart' show join;
+import 'package:path/path.dart' as p;
 
 @visibleForTesting
 const regex = r'''(?:namespace|applicationId)\s*(?:=)?\s*(['"])([^'"]+)\1''';
@@ -80,7 +80,7 @@ class Android {
     if (path?.isNotEmpty == true) {
       outPath = path;
     } else if (_srcRoot != null && packageName != null) {
-      outPath = join(
+      outPath = p.posix.join(
         _srcRoot!,
         'src/main',
         language,

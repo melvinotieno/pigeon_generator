@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:path/path.dart' show join;
+import 'package:path/path.dart' as p;
 import 'package:pigeon/pigeon.dart';
 
 import 'output_config.dart';
@@ -10,8 +10,8 @@ class SwiftConfig {
   SwiftConfig._internal({this.out, Map<String, dynamic>? options})
     : _options = options;
 
-  /// Configuration for the ".swift" file that will be generated.
-  final OutputConfig? out;
+  /// Configuration for the ".swift" file(s) that will be generated.
+  final Iterable<OutputConfig>? out;
 
   /// Options that control how Swift code will be generated.
   final Map<String, dynamic>? _options;
@@ -42,9 +42,12 @@ class SwiftConfig {
   /// final config4 = SwiftConfig.fromMap(true, 'my_project');
   /// final config5 = SwiftConfig.fromMap(null, 'my_project');
   ///
-  /// // Custom output path
+  /// // Custom output path(s)
   /// final config6 = SwiftConfig.fromMap({
-  ///   'out': 'custom/path/output.swift'
+  ///   'out': 'custom/path'
+  /// });
+  /// final config7 = SwiftConfig.fromMap({
+  ///   'out': ['ios/Runner', 'macos/Runner']
   /// });
   /// ```
   factory SwiftConfig.fromMap(dynamic map, [String? outFolder]) {
@@ -54,14 +57,26 @@ class SwiftConfig {
 
     final config = map is Map ? map : <String, dynamic>{};
     final parts = outFolder?.split('/').map((part) => part.capitalize());
-    final defaultPath = join('ios/Runner', parts?.join('/'));
+    final defaultPath = p.posix.join('ios/Runner', parts?.join('/'));
+
+    final rawOut = config['out'] ?? defaultPath;
+    final outPaths = switch (rawOut) {
+      final String path => [path],
+      final Iterable<dynamic> paths => paths.whereType<String>(),
+      _ => <String>[defaultPath],
+    };
 
     return SwiftConfig._internal(
-      out: OutputConfig.fromOptions(
-        config['out'] as String? ?? defaultPath,
-        extension: 'swift',
-        pascalCase: true,
-      ),
+      out: outPaths
+          .map(
+            (path) => OutputConfig.fromOptions(
+              path,
+              extension: 'swift',
+              pascalCase: true,
+            ),
+          )
+          .whereType<OutputConfig>()
+          .toList(),
       options: config['options'] as Map<String, dynamic>?,
     );
   }

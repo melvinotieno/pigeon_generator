@@ -1,4 +1,4 @@
-import 'package:path/path.dart' show join;
+import 'package:path/path.dart' as p;
 
 import 'output_config.dart';
 
@@ -42,7 +42,7 @@ class AstConfig {
     if (map == false || map == null) return AstConfig._internal();
 
     final config = map is Map ? map : <String, dynamic>{};
-    final defaultPath = join('ast', outFolder);
+    final defaultPath = p.posix.join('ast', outFolder);
 
     return AstConfig._internal(
       out: OutputConfig.fromOptions(

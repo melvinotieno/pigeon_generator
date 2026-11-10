@@ -1,3 +1,17 @@
+## 4.0.0
+
+- Adds support for multiple Swift output paths in `swift.out` configuration and `PigeonOptions.swiftOut`.
+- Adds support for `ignore_lints` in top-level and `dart.options` configuration, and `use_generated_annotation` in `kotlin.options` configuration.
+- Passes `copyrightHeader` to `PigeonOptions` in `PigeonConfig.getPigeonOptions`.
+- Fixes path separator issues on Windows across configuration, builder, and scratch space paths.
+- Fixes `gobject` option key in example files (`module` instead of `namespace`).
+
+### Breaking Changes
+
+- Updates minimum supported SDK version to Dart 3.11.
+- Updates minimum Pigeon version to 29.1.1.
+- `SwiftConfig.out` is now `Iterable<OutputConfig>?` instead of `OutputConfig?` to support multiple Swift output locations.
+
 ## 3.1.1
 
 - Updates minimum supported SDK version to Dart 3.9.

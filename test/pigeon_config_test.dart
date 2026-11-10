@@ -45,6 +45,7 @@ void main() {
           'copyright_header': 'files/copyright.txt',
           'debug_generators': true,
           'base_path': '/base',
+          'ignore_lints': false,
           'out_folder': 'generated',
           'out_template': 'name.generated.extension',
         };
@@ -55,6 +56,7 @@ void main() {
         expect(config.copyrightHeader, equals('files/copyright.txt'));
         expect(config.debugGenerators, isTrue);
         expect(config.basePath, equals('/base'));
+        expect(config.ignoreLints, isFalse);
         expect(config.outFolder, equals('generated'));
         expect(config.outTemplate, equals('name.generated.extension'));
       });
@@ -72,14 +74,16 @@ void main() {
           }
         ''';
 
-        await Directory('pigeons').create();
+        await Directory('pigeons').create(recursive: true);
         await File('pigeons/api_file.dart').writeAsString(content);
+        await File('pigeons/copyright.txt').writeAsString('Copyright © 2024');
 
         final config = PigeonConfig.fromMap({'swift': true});
         final options = config.getPigeonOptions('pigeons/api_file.dart');
 
         expect(options.dartOut, equals('lib/api_file.g.dart'));
-        expect(options.swiftOut, equals('ios/Runner/ApiFile.g.swift'));
+        expect(options.swiftOut, equals(['ios/Runner/ApiFile.g.swift']));
+        expect(options.copyrightHeader, equals('pigeons/copyright.txt'));
       });
     });
   });

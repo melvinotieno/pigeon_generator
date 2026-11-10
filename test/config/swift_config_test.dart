@@ -43,28 +43,39 @@ void main() {
         // Tests without base folder path
         SwiftConfig config = SwiftConfig.fromMap(map);
 
-        expect(config.out?.path, equals('path/to/output'));
-        expect(config.out?.extension, equals('swift'));
-        expect(config.out?.pascalCase, isTrue);
-        expect(config.out?.append, isNull);
+        expect(config.out?.first.path, equals('path/to/output'));
+        expect(config.out?.first.extension, equals('swift'));
+        expect(config.out?.first.pascalCase, isTrue);
+        expect(config.out?.first.append, isNull);
 
         // Tests with base folder path
         config = SwiftConfig.fromMap(map, 'my_project');
 
-        expect(config.out?.path, equals('path/to/output'));
-        expect(config.out?.extension, equals('swift'));
-        expect(config.out?.pascalCase, isTrue);
-        expect(config.out?.append, isNull);
+        expect(config.out?.first.path, equals('path/to/output'));
+        expect(config.out?.first.extension, equals('swift'));
+        expect(config.out?.first.pascalCase, isTrue);
+        expect(config.out?.first.append, isNull);
+
+        // Tests with multiple output paths
+        final multiMap = {
+          'out': ['ios/Runner', 'macos/Runner'],
+        };
+        config = SwiftConfig.fromMap(multiMap);
+
+        expect(
+          config.out?.map((e) => e.path),
+          equals(['ios/Runner', 'macos/Runner']),
+        );
       });
 
       test('should return default values for any other type', () async {
         // Tests for true value
         SwiftConfig config = SwiftConfig.fromMap(true);
 
-        expect(config.out?.path, equals('ios/Runner'));
-        expect(config.out?.extension, equals('swift'));
-        expect(config.out?.pascalCase, isTrue);
-        expect(config.out?.append, isNull);
+        expect(config.out?.first.path, equals('ios/Runner'));
+        expect(config.out?.first.extension, equals('swift'));
+        expect(config.out?.first.pascalCase, isTrue);
+        expect(config.out?.first.append, isNull);
 
         // For null to return default values, there needs to exist an ios
         // directory in the root of the project.
@@ -72,10 +83,10 @@ void main() {
 
         config = SwiftConfig.fromMap(null, 'project/folder');
 
-        expect(config.out?.path, equals('ios/Runner/Project/Folder'));
-        expect(config.out?.extension, equals('swift'));
-        expect(config.out?.pascalCase, isTrue);
-        expect(config.out?.append, isNull);
+        expect(config.out?.first.path, equals('ios/Runner/Project/Folder'));
+        expect(config.out?.first.extension, equals('swift'));
+        expect(config.out?.first.pascalCase, isTrue);
+        expect(config.out?.first.append, isNull);
       });
     });
 

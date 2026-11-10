@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:build/build.dart';
 import 'package:meta/meta.dart';
-import 'package:path/path.dart' as path;
+import 'package:path/path.dart' as p;
 import 'package:pigeon/pigeon.dart';
 import 'package:scratch_space/scratch_space.dart';
 
@@ -38,9 +38,13 @@ final scratchSpaceResource = Resource<PigeonScratchSpace>(
 class PigeonScratchSpace extends ScratchSpace {
   @override
   File fileFor(AssetId id) {
-    final packagePath = path.url.join('package', id.package, id.path);
-
-    return File(path.join(tempDir.path, path.normalize(packagePath)));
+    final packagePath = p.join(
+      tempDir.path,
+      'package',
+      p.normalize(id.package),
+      p.normalize(id.path),
+    );
+    return File(packagePath);
   }
 
   /// Creates a new [PigeonOptions] object with the output paths updated to use
@@ -98,7 +102,12 @@ class PigeonScratchSpace extends ScratchSpace {
       gobjectSourceOut: getPath(pigeonOptions.gobjectSourceOut),
       kotlinOut: getPath(pigeonOptions.kotlinOut),
       javaOut: getPath(pigeonOptions.javaOut),
-      swiftOut: getPath(pigeonOptions.swiftOut),
+      swiftOut: switch (pigeonOptions.swiftOut) {
+        final String path => getPath(path),
+        final Iterable<dynamic> paths =>
+          paths.whereType<String>().map(getPath).whereType<String>().toList(),
+        _ => null,
+      },
       objcHeaderOut: getPath(pigeonOptions.objcHeaderOut),
       objcSourceOut: getPath(pigeonOptions.objcSourceOut),
       astOut: getPath(pigeonOptions.astOut),

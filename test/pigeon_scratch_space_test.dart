@@ -1,4 +1,5 @@
 import 'package:build/build.dart';
+import 'package:path/path.dart' as p;
 import 'package:pigeon/pigeon.dart';
 import 'package:pigeon_generator/src/pigeon_scratch_space.dart';
 import 'package:test/test.dart';
@@ -10,7 +11,12 @@ void main() {
 
     setUpAll(() {
       scratchSpace = PigeonScratchSpace();
-      libPath = '${scratchSpace.tempDir.path}/package/test_package/lib';
+      libPath = p.join(
+        scratchSpace.tempDir.path,
+        'package',
+        'test_package',
+        'lib',
+      );
     });
 
     tearDownAll(() {
@@ -20,7 +26,7 @@ void main() {
     test('fileFor returns correct file path', () {
       final assetId = AssetId('test_package', 'lib/test.dart');
       final file = scratchSpace.fileFor(assetId);
-      final expectedPath = '$libPath/test.dart';
+      final expectedPath = p.join(libPath, 'test.dart');
 
       expect(file.path, expectedPath);
     });
@@ -60,17 +66,40 @@ void main() {
         allowedOutputs,
       );
 
-      expect(updatedOptions.dartOut, '$libPath/dart_out.dart');
-      expect(updatedOptions.cppHeaderOut, '$libPath/cpp_header.h');
-      expect(updatedOptions.cppSourceOut, '$libPath/cpp_source.cpp');
-      expect(updatedOptions.gobjectHeaderOut, '$libPath/gobject_header.h');
-      expect(updatedOptions.gobjectSourceOut, '$libPath/gobject_source.cpp');
-      expect(updatedOptions.kotlinOut, '$libPath/kotlin_out.kt');
-      expect(updatedOptions.javaOut, '$libPath/java_out.java');
-      expect(updatedOptions.swiftOut, '$libPath/swift_out.swift');
-      expect(updatedOptions.objcHeaderOut, '$libPath/objc_header.h');
-      expect(updatedOptions.objcSourceOut, '$libPath/objc_source.m');
-      expect(updatedOptions.astOut, '$libPath/ast_out.ast');
+      expect(updatedOptions.dartOut, p.join(libPath, 'dart_out.dart'));
+      expect(updatedOptions.cppHeaderOut, p.join(libPath, 'cpp_header.h'));
+      expect(updatedOptions.cppSourceOut, p.join(libPath, 'cpp_source.cpp'));
+      expect(
+        updatedOptions.gobjectHeaderOut,
+        p.join(libPath, 'gobject_header.h'),
+      );
+      expect(
+        updatedOptions.gobjectSourceOut,
+        p.join(libPath, 'gobject_source.cpp'),
+      );
+      expect(updatedOptions.kotlinOut, p.join(libPath, 'kotlin_out.kt'));
+      expect(updatedOptions.javaOut, p.join(libPath, 'java_out.java'));
+      expect(updatedOptions.swiftOut, p.join(libPath, 'swift_out.swift'));
+      expect(updatedOptions.objcHeaderOut, p.join(libPath, 'objc_header.h'));
+      expect(updatedOptions.objcSourceOut, p.join(libPath, 'objc_source.m'));
+      expect(updatedOptions.astOut, p.join(libPath, 'ast_out.ast'));
+
+      final multiSwiftOptions = PigeonOptions(
+        swiftOut: ['lib/swift_out_1.swift', 'lib/swift_out_2.swift'],
+      );
+      final multiSwiftAllowedOutputs = [
+        AssetId('test_package', 'lib/swift_out_1.swift'),
+        AssetId('test_package', 'lib/swift_out_2.swift'),
+      ];
+      final updatedMultiSwiftOptions = scratchSpace.getPigeonOptions(
+        multiSwiftOptions,
+        multiSwiftAllowedOutputs,
+      );
+
+      expect(updatedMultiSwiftOptions.swiftOut, [
+        p.join(libPath, 'swift_out_1.swift'),
+        p.join(libPath, 'swift_out_2.swift'),
+      ]);
     });
   });
 }

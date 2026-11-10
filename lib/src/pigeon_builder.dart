@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:build/build.dart';
-import 'package:path/path.dart' as path;
+import 'package:path/path.dart' as p;
 import 'package:pigeon/pigeon.dart';
 
 import 'pigeon_config.dart';
@@ -17,7 +17,7 @@ class PigeonBuilder extends Builder {
   final PigeonConfig config;
 
   /// The path context to use for file operations.
-  final path.Context _pathContext = path.Context();
+  final p.Context _pathContext = p.Context();
 
   @override
   Map<String, List<String>> get buildExtensions {
@@ -33,7 +33,7 @@ class PigeonBuilder extends Builder {
     // For each file, get the Pigeon options and their outputs.
     for (final entity in inputsDirectory.listSync()) {
       if (entity is File && entity.path.endsWith('.dart')) {
-        final input = entity.path;
+        final input = p.posix.joinAll(_pathContext.split(entity.path));
         final pigeonOptions = config.getPigeonOptions(input);
         result[input] = pigeonOptions.getOutputs();
       }
